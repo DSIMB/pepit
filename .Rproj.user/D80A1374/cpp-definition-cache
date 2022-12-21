@@ -1,0 +1,68 @@
+[
+    {
+        "file": "/home/frederic/pepit/src/pepit.cpp",
+        "file_last_write": 1670433384.0,
+        "definitions": [
+            {
+                "usr": "c:@F@distloc#I#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "distloc(Rcpp::NumericMatrix, int, int)",
+                "file": "/home/frederic/pepit/src/pepit.cpp",
+                "line": 6,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@vertex#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "vertex(Rcpp::CharacterVector, Rcpp::CharacterVector)",
+                "file": "/home/frederic/pepit/src/pepit.cpp",
+                "line": 24,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@buildGraph#I#I#I#d#d#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "buildGraph(Rcpp::NumericMatrix, Rcpp::NumericMatrix, Rcpp::IntegerMatrix, double, double, double)",
+                "file": "/home/frederic/pepit/src/pepit.cpp",
+                "line": 57,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@mapping_dist_sum2#I#I#I#I#I#I#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "mapping_dist_sum2(Rcpp::NumericMatrix, Rcpp::IntegerVector, Rcpp::IntegerVector, Rcpp::NumericMatrix, Rcpp::IntegerVector, Rcpp::IntegerVector, double)",
+                "file": "/home/frederic/pepit/src/pepit.cpp",
+                "line": 92,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@getConnectedNeighbors#I#I#I#I#d#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "getConnectedNeighbors(Rcpp::IntegerVector, Rcpp::IntegerMatrix, Rcpp::NumericMatrix, Rcpp::NumericMatrix, double, int)",
+                "file": "/home/frederic/pepit/src/pepit.cpp",
+                "line": 123,
+                "column": 15
+            }
+        ]
+    },
+    {
+        "file": "/home/frederic/pepit/src/rcpp_hello_world.cpp",
+        "file_last_write": 1669974753.0,
+        "definitions": [
+            {
+                "usr": "c:@F@rcpp_hello_world#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "rcpp_hello_world",
+                "file": "/home/frederic/pepit/src/rcpp_hello_world.cpp",
+                "line": 6,
+                "column": 6
+            }
+        ]
+    }
+]

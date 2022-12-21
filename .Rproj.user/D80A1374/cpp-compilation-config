@@ -1,0 +1,22 @@
+{
+    "args": [
+        "-std=gnu++14",
+        "-I/usr/include/R",
+        "-DNDEBUG",
+        "-I/usr/local/include",
+        "-fpic",
+        "-flto=auto",
+        "-ffat-lto-objects",
+        "-fexceptions",
+        "-fstack-protector-strong",
+        "-fasynchronous-unwind-tables",
+        "-fstack-clash-protection",
+        "-fcf-protection",
+        "-I/home/frederic/R/x86_64-pc-linux-gnu-library/4.0/Rcpp/include"
+    ],
+    "pch": "Rcpp",
+    "is_cpp": true,
+    "hash": "1669976778",
+    "compiler": "13305658063730290235",
+    "rversion": "4.1.1"
+}
