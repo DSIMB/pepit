@@ -1,0 +1,19 @@
+# output
+Le script crée dans le répertoire <Banque> un fichier pdb pour chaque ligne.
+Chaque fichier pdb contient les atomes du récepteur en contact avec le peptide (par défaut à moins de 5A).
+Les atomes sont annotés (typed) comme A,C,O,N,a,b,c,o,n mis dans la colonne pdb "element symbol"
+et l'accessibilité au solvant est mise dans la colonne "Temperature factor".
+Le fichier est nommé idX:Y.pdb, avec X la chaîne ou la liste des chaînes du récepteurs et Y la chaîne du peptide.
+
+# sous bash
+echo "PDB Receptor.Chain Peptide.Chain Peptide.Size" > banque.dat
+echo "148l E S" >> banque.dat
+echo "1a07 A C" >> banque.dat
+echo "1a07 B D" >> banque.dat
+echo "1a08 A C" >> banque.dat
+
+mkdir Banque
+Rscript ./BuiltBSBank.R  banque.dat Banque
+
+crée: Banque/148lE:S.pdb, Banque/1a07A:C.pdb, Banque/1a07B:D.pdb, Banque/1a08A:C.pdb
+

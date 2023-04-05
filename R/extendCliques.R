@@ -12,7 +12,7 @@ filter_greedy=function(C, X, Y, score_function, thresh) {
   CJ=(C-1)%/%N+1# query indices
   W=score_function(X, CI, CI, Y, CJ, CJ, thresh)
   #maxs=sum(W)
-  print(ind)
+  ind=which.min(W)
   while (W[ind]<=0) {
     CI=CI[-ind];CJ=CJ[-ind];C=C[-ind]
     W=score_function(X, CI, CI, Y, CJ, CJ,thresh)
@@ -42,7 +42,7 @@ max_bipartite_score=function(C, K, X, Y, gp, score_function, thresh) {
   list(C=(jnd-1)*N+ind, weight=W, score=result$matching_weight)
 }
 
-max_bipartite=function(C, K, X, Y, thresh, verbose=FALSE, score_function=patchsearch_SCORE) {
+max_bipartite=function(C, K, X, Y, thresh, verbose=FALSE, score_function=get.pepit("SCORE")) {
   Nref=min(nrow(X), nrow(Y))
   N=nrow(X)
   KI=(K-1)%%N+1
@@ -76,7 +76,7 @@ max_bipartite=function(C, K, X, Y, thresh, verbose=FALSE, score_function=patchse
 }
 
 
-max_bipartite_simple_greedy=function(C, K, X, Y, thresh, verbose=FALSE, score_function=patchsearch_SCORE) {
+max_bipartite_simple_greedy=function(C, K, X, Y, thresh, verbose=FALSE, score_function=get.pepit("SCORE")) {
   Nref=min(nrow(X), nrow(Y))
   N=nrow(X)
   CI=(C-1)%%N+1 # target indices
@@ -87,18 +87,17 @@ max_bipartite_simple_greedy=function(C, K, X, Y, thresh, verbose=FALSE, score_fu
   KJ=(K-1)%/%N+1
   stop=FALSE
   score_init=matching_score(C,X, Y, score_function,thresh)
-  cat("C=",length(C),score_init, score_init/length(C),"\n")
+  #cat("C=",length(C),score_init, score_init/length(C),"\n")
   W=score_function(X, KI, CI, Y, KJ, CJ, thresh)
   W1=score_function(X, CI, CI, Y, CJ, CJ, thresh)
-  cat("score =", sum(W1), "\n")
-  
+
   while(!stop) {
     stop=TRUE
     ind=which.max(W)
     w=W[ind]
     nC=length(C)
     score=matching_score(C, X, Y,  score_function, thresh)
-    cat("score =", w, score,  score/nC, "\n")
+    #cat("score =", w, score,  score/nC, "\n")
     if (w>0) {
       #if (w>(score/nC-1)/2) #!si wii=1
       CI=c(CI,KI[ind])
@@ -115,7 +114,6 @@ max_bipartite_simple_greedy=function(C, K, X, Y, thresh, verbose=FALSE, score_fu
     }
   }
   score=matching_score(C, X, Y, score_function, thresh)
-  cat("score =", score, "\n")
   dist=thresh*(1-1/nC**2*score)
   if (stop & verbose) cat ("convergence\n")
   list(C=C, score=score/nC, dist=dist, coverage=nC/Nref)
@@ -128,7 +126,7 @@ max_bipartite_simple_greedy=function(C, K, X, Y, thresh, verbose=FALSE, score_fu
 #' @param XProp atom label vector from target (N)
 #' @param Y atom coordinate matrix from query (a binding site) (Mx3)
 #' @param YProp atom label vector from query  (M)
-#' @param cliques list of mappings that are lists of corresponding atom indices ($I and $J)
+#' @param cliques list of mappings that are lists of corresponding edge indices 
 #' @param deltadist precision parameter
 #' @import bio3d
 #' @import igraph
@@ -137,26 +135,68 @@ max_bipartite_simple_greedy=function(C, K, X, Y, thresh, verbose=FALSE, score_fu
 #' @export
 #'
 #' @examples
-extend_cliques=function(X, XProp, Y, YProp, cliques, deltadist, score_function=patchsearch_SCORE, verbose=FALSE) {
+extend_cliques=function(X, XProp, Y, YProp, cliques, deltadist, score_function=get.pepit("SCORE"), verbose=FALSE) {
+  N=nrow(X)
   nbclique=length(cliques)
   clusters=list()
   V=vertex(XProp, YProp)
   for (ic in 1:nbclique) {
-    cat("enlarging clique ", ic, "with score threshold", deltadist,"\n")
+    cat("enlarging clique ", ic, "\n")
     C=cliques[[ic]]
     nbefore= length(C)
     #
     # calcul de K=ensemble de links à tester pour enrichir clique choisie
     # 1. ensemble des voisins de C
     #
-    K=getConnectedNeighbors(C, V, X, Y, deltadist, patchsearch_NBNEI)
+    #K=selectLinks(C, V, X, Y, deltadist, get.pepit("NBNEI"))
+    #K=union(K,C)
+    K=(V[,1]-1)*N+V[,2]
+    result=max_bipartite(C, K, X, Y, thresh=deltadist, verbose, score_function)
+    #result=max_bipartite_simple_greedy(C, K, X, Y, deltadist, verbose=FALSE, score_function)
+    clusters[[ic]]=result$C
+    #clen[ic]=length(C)
+  }
+  return(clusters)
+}
+#' extends cliques for hot spots application
+#'
+#' @param X atom coordinate matrix from target (Nx3)
+#' @param XProp atom label vector from target (N)
+#' @param XResname residue name vector from target (N)
+#' @param XResno residue number vector from target (N)
+#' @param Y atom coordinate matrix from query (a binding site) (Mx3)
+#' @param YProp atom label vector from query  (M)
+#' @param YResname residue name vector from query (N)
+#' @param YResno residue number vector from query (N)
+#' @param cliques list of mappings that are lists of corresponding edge indices 
+#' @param deltadist precision parameter
+#' @import bio3d
+#' @import igraph
+#' @import Rcpp
+#' @return list of clusters : a cluster is a list of X indices (cluster$I) and of Y indices (cluster$J)
+#' @export
+#'
+#' @examples
+extend_cliques_ho=function(X, XProp, XResname, XResno, Y, YProp, YResname, YResno, cliques, deltadist, score_function=get.pepit("SCORE"), verbose=FALSE) {
+  N=nrow(X)
+  nbclique=length(cliques)
+  clusters=list()
+  V=vertex_ho(XProp, XResname, YProp, YResname)
+  for (ic in 1:nbclique) {
+    cat("enlarging clique ", ic, "\n")
+    C=cliques[[ic]]
+    nbefore= length(C)
+    #
+    # calcul de K=ensemble de links à tester pour enrichir clique choisie
+    # 1. ensemble des voisins de C
+    #
+    K=selectLinks(C, V, X, XResno, Y, YResno, deltadist, get.pepit("NBNEI"), get.pepit("AAGAP"))
     K=union(K,C)
     #K=(V[,1]-1)*N+V[,2]
     result=max_bipartite(C, K, X, Y, thresh=deltadist, verbose, score_function)
-    #result=max_bipartite_simple_greedy(C, K, X, Y, deltadist, verbose=FALSE, score_function=mapping_score) {
+    #result=max_bipartite_simple_greedy(C, K, X, Y, deltadist, verbose=FALSE, score_function)
     clusters[[ic]]=result$C
     #clen[ic]=length(C)
-    cat("score = ", result$score, "\n")
   }
   return(clusters)
 }
@@ -172,7 +212,7 @@ extend_cliques=function(X, XProp, Y, YProp, cliques, deltadist, score_function=p
 #' @export
 #'
 #' @examples
-remove_redundant_clusters = function(clusters, common=patchsearch_INTERCLIQUE) {
+remove_redundant_clusters = function(clusters, common=get.pepit("INTERCLIQUE")) {
   o=order(unlist(lapply(clusters, length)), decreasing=TRUE)
   clusters=clusters[o]
   n=length(clusters)
@@ -191,6 +231,5 @@ remove_redundant_clusters = function(clusters, common=patchsearch_INTERCLIQUE) {
     }
     i=i+1
   }
-  cat("------> remove_redundant_clusters", length(clusters),"\n")
   return(clusters)
 }

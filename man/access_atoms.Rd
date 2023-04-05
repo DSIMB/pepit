@@ -7,10 +7,10 @@
 access_atoms(
   pdb,
   chains = NULL,
-  minacc = ACC,
-  probeRadius = radius,
-  surface = FALSE,
-  add = "calpha"
+  minacc = get.pepit("ACC"),
+  probeRadius = get.pepit("radius"),
+  add = get.pepit("ADD"),
+  select = FALSE
 )
 }
 \arguments{
@@ -22,9 +22,9 @@ access_atoms(
 
 \item{probeRadius}{probe radius in Angstroms for the FreeSASA application}
 
-\item{surface}{boolean for keeping atoms in output pdb}
+\item{add}{type of carbon atoms to be added}
 
-\item{add}{include carbon alpha of residues with accessible atoms}
+\item{select}{boolean for keeping atoms in output pdb}
 }
 \value{
 modified pdb structure (b field with SASA values)
@@ -33,6 +33,10 @@ modified pdb structure (b field with SASA values)
 It replaces the b field by the solvent accessible surface area
 
 protein chains are processed independantly
+
+if chains!=NULL, only b field of chains in chains are set to acc.
+
+b field of the other chains are set to 0
 
 it implies that binding sites between chains in contact are accessible
 }

@@ -4,7 +4,7 @@
 \alias{remove_redundant_clusters}
 \title{extends cliques}
 \usage{
-remove_redundant_clusters(clusters, common = patchsearch_INTERCLIQUE)
+remove_redundant_clusters(clusters, common = get.pepit("INTERCLIQUE"))
 }
 \arguments{
 \item{clusters}{list of cluster}

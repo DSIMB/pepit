@@ -5,14 +5,30 @@ distloc <- function(X, ind1, ind2) {
     .Call('_pepit_distloc', PACKAGE = 'pepit', X, ind1, ind2)
 }
 
+gaploc <- function(ResNo, ind1, ind2) {
+    .Call('_pepit_gaploc', PACKAGE = 'pepit', ResNo, ind1, ind2)
+}
+
 #' Constructs vertices of correspondence graph
 #'
-#' @param XProp vecteur of atom types N
-#' @param YProp vecteur of atom types N
-#' @param V matrix Nvx2 of vertices
+#' @param XProp size N vector of atom types
+#' @param YProp size M vector of atom types
+#' @param V output matrix Nvx2 of vertices
 #' @export
 vertex <- function(XProp, YProp) {
     .Call('_pepit_vertex', PACKAGE = 'pepit', XProp, YProp)
+}
+
+#' Constructs vertices of correspondence graph
+#'
+#' @param XProp size N vector of atom types 
+#' @param XResname size N vector of residue names 
+#' @param YProp size M vector of atom types 
+#' @param YResname size M vector of residue names 
+#' @param V output, matrix Nvx2 of vertices
+#' @export
+vertex_ho <- function(XProp, XResname, YProp, YResname) {
+    .Call('_pepit_vertex_ho', PACKAGE = 'pepit', XProp, XResname, YProp, YResname)
 }
 
 #' Constructs correspondence graph
@@ -28,13 +44,26 @@ buildGraph <- function(X, Y, V, deltadist, mindist, maxdist) {
     .Call('_pepit_buildGraph', PACKAGE = 'pepit', X, Y, V, deltadist, mindist, maxdist)
 }
 
+#' Constructs correspondence graph
+#'
+#' @param X matrix Nx3
+#' @param Y matrix Nx3
+#' @param V matrix Nvx2
+#' @param deltadist double
+#' @param mindist double
+#' @param maxdist double
+#' @export
+buildGraph_ho <- function(X, XResno, Y, YResno, V, deltadist, mindist, maxdist, maxgap) {
+    .Call('_pepit_buildGraph_ho', PACKAGE = 'pepit', X, XResno, Y, YResno, V, deltadist, mindist, maxdist, maxgap)
+}
+
 #' @export
 mapping_dist_sum2 <- function(X, I, CI, Y, J, CJ, thresh) {
     .Call('_pepit_mapping_dist_sum2', PACKAGE = 'pepit', X, I, CI, Y, J, CJ, thresh)
 }
 
-getConnectedNeighbors <- function(C, V, X, Y, thresh, nbnei) {
-    .Call('_pepit_getConnectedNeighbors', PACKAGE = 'pepit', C, V, X, Y, thresh, nbnei)
+selectLinks <- function(C, V, X, XResno, Y, YResno, thresh, nbnei, maxgap) {
+    .Call('_pepit_selectLinks', PACKAGE = 'pepit', C, V, X, XResno, Y, YResno, thresh, nbnei, maxgap)
 }
 
 rcpp_hello_world <- function() {

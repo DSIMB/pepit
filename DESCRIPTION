@@ -1,12 +1,11 @@
 Package: pepit
 Type: Package
-Title: What the Package Does in One 'Title Case' Line
+Title: PEptide Protein Interaction for Therapeutic purposes
 Version: 1.0
 Date: 2022-12-02
 Author: Frederic Guyon
 Maintainer: Frederic Guyon <frederic.guyon@u-paris.fr>
-Description: One paragraph description of what the package does as one
-        or more full sentences.
+Description: Similarties of peptide binding sites and target protein surfaces
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.9),bio3d,igraph,vanddraabe
 LinkingTo: Rcpp

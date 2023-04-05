@@ -14,18 +14,25 @@ double distloc(NumericMatrix X, int ind1, int ind2) {
   return sqrt(sum);
 }
 
+// [[Rcpp::export]]
+int gaploc(IntegerVector ResNo, int ind1, int ind2) {
+  int x,y;
+  x=ResNo(ind1-1);
+  y=ResNo(ind2-1);
+  return abs(x-y);
+}
+
 //' Constructs vertices of correspondence graph
 //'
-//' @param XProp vecteur of atom types N
-//' @param YProp vecteur of atom types N
-//' @param V matrix Nvx2 of vertices
+//' @param XProp size N vector of atom types
+//' @param YProp size M vector of atom types
+//' @param V output matrix Nvx2 of vertices
 //' @export
 // [[Rcpp::export]]
 IntegerMatrix vertex(CharacterVector XProp,  CharacterVector YProp) {
   int i,ip,v=0;
   int N=XProp.size();
   int M=YProp.size();
-  fprintf(stdout, "..in vertex\n");
   IntegerMatrix V(N*M,2);
   for(i=0; i<M; i++) {
     for (ip=0; ip<N; ip++) {
@@ -40,7 +47,38 @@ IntegerMatrix vertex(CharacterVector XProp,  CharacterVector YProp) {
         fprintf(stderr,"no product graph...\n");
         return V(Range(0,0),_);
   }
-  fprintf(stdout, "%d vertices\n", V.nrow());
+  fprintf(stdout, "---> vertices of correspondence graph = mapping edges: %d\n", V.nrow());
+  return V(Range(0,v-1),_);
+}
+
+//' Constructs vertices of correspondence graph
+//'
+//' @param XProp size N vector of atom types 
+//' @param XResname size N vector of residue names 
+//' @param YProp size M vector of atom types 
+//' @param YResname size M vector of residue names 
+//' @param V output, matrix Nvx2 of vertices
+//' @export
+// [[Rcpp::export]]
+IntegerMatrix vertex_ho(StringVector XProp, StringVector XResname, StringVector YProp, StringVector YResname) {
+  int i,ip,v=0;
+  int N=XProp.size();
+  int M=YProp.size();
+  IntegerMatrix V(N*M,2);
+  for(i=0; i<M; i++) {
+    for (ip=0; ip<N; ip++) {
+      if (strcmp(XProp(ip),YProp(i))==0 && strcmp(XResname(ip),YResname(i))==0) {
+        //Rcpp::Rcout << XProp(ip) << "," << YProp(i) << ","<< XRes(ip) << ","<< YRes(i) << "\n";
+        V(v,0)=i+1;
+        V(v,1)=ip+1;
+        v++;
+      }
+    }
+  }
+  if (v<=1) {
+    fprintf(stderr,"no product graph...\n");
+    return V(Range(0,0),_);
+  }
   return V(Range(0,v-1),_);
 }
 
@@ -87,6 +125,53 @@ IntegerMatrix buildGraph(NumericMatrix X, NumericMatrix Y, IntegerMatrix V, doub
   return E;
 }
 
+//' Constructs correspondence graph
+//'
+//' @param X matrix Nx3
+//' @param Y matrix Nx3
+//' @param V matrix Nvx2
+//' @param deltadist double
+//' @param mindist double
+//' @param maxdist double
+//' @export
+// [[Rcpp::export]]
+IntegerMatrix buildGraph_ho(NumericMatrix X, IntegerVector XResno, NumericMatrix Y, IntegerVector YResno, IntegerMatrix V, double deltadist, double mindist, double maxdist, int maxgap) {
+  int i,j, nv, e=0, gap;
+  double d,d1,d2;
+  std::vector<int> Etmp;
+  
+  nv=V.nrow();
+  
+  for(i=0; i<nv-1; i++) {
+    for (j=i+1; j<nv; j++) {
+      //printf("%d %d %d %d\n",V(i,0),V(j,0),V(i,1),V(j,1));
+      d1=distloc(Y,V(i,0),V(j,0)); // dist between atoms i and j in Y
+      d2=distloc(X,V(i,1),V(j,1)); // dist between atoms i and j in X
+      d=fabs(d1-d2);
+      gap=gaploc(XResno,V(i,1),V(j,1));
+      if (d<=deltadist && d1>=mindist && d2>=mindist && d1<=maxdist && d2<=maxdist && gap<=maxgap) {
+        Etmp.push_back(V(i,1));
+        Etmp.push_back(V(j,1));
+        Etmp.push_back(V(i,0));
+        Etmp.push_back(V(j,0));
+        e+=1;
+      }
+    }
+  }
+  int n=Etmp.size();
+  IntegerMatrix E(e,4);
+  for (i=0,j=0; i<n-3; i+=4,j++) {
+    E(j,0)=Etmp[i];
+    E(j,1)=Etmp[i+1];
+    E(j,2)=Etmp[i+2];
+    E(j,3)=Etmp[i+3];
+  }
+  Etmp.clear();
+  return E;
+}
+
+
+
 //' @export
 // [[Rcpp::export]]
 NumericVector mapping_dist_sum2(NumericMatrix X, IntegerVector I, IntegerVector CI, NumericMatrix Y, IntegerVector J, IntegerVector CJ, double thresh) {
@@ -104,10 +189,10 @@ NumericVector mapping_dist_sum2(NumericMatrix X, IntegerVector I, IntegerVector 
         score=0.;
         break;
       } else {
-	d1=distloc(Y,CJ(j),J(i));
-	d2=distloc(X,CI(j),I(i));
-	deltadist=fabs(d1-d2);
-	sc=1-deltadist/thresh;
+	        d1=distloc(Y,CJ(j),J(i));
+	        d2=distloc(X,CI(j),I(i));
+	        deltadist=fabs(d1-d2);
+	        sc=1-deltadist/thresh;
       }
       //if (deltadist>thresh) sc=0.;
       score=score+sc;
@@ -118,10 +203,10 @@ NumericVector mapping_dist_sum2(NumericMatrix X, IntegerVector I, IntegerVector 
   return scores;
 }
 
-// all nodes in V connected to at least nbnei in C
+// all nodes in V connected to at least nbnei in C and not to far in target (X) sequence for hot spots application 
 // [[Rcpp::export]]
-IntegerVector getConnectedNeighbors(IntegerVector C, IntegerMatrix V, NumericMatrix X, NumericMatrix Y, double thresh, int nbnei) {
-  int i,j,inC,count=0;
+IntegerVector selectLinks(IntegerVector C, IntegerMatrix V, NumericMatrix X, IntegerVector XResno, NumericMatrix Y, IntegerVector YResno, double thresh, int nbnei, int maxgap) {
+  int i, j, inC, gap, count=0;
   int nC=C.size();
   IntegerVector K;
   IntegerVector I(nC), J(nC);
@@ -141,8 +226,9 @@ IntegerVector getConnectedNeighbors(IntegerVector C, IntegerMatrix V, NumericMat
         d1=distloc(Y,J(i),V(j,0));
         d2=distloc(X,I(i),V(j,1));
         deltadist=fabs(d1-d2);
-        //deltadist=fabs(d1-d2)/std::min(d1,d2);
-        if (deltadist<=thresh) count++;
+        gap=gaploc(XResno, I(i), V(j,1));
+          //deltadist=fabs(d1-d2)/std::min(d1,d2);
+        if (deltadist<=thresh && gap<=maxgap) count++;
       }
       else inC=1; // j is in C
     }

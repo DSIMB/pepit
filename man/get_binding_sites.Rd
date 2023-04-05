@@ -8,10 +8,11 @@ get_binding_sites(
   pdb,
   target_chains,
   ligand_chains,
-  cutoff = 5,
-  add = "calpha",
+  cutoff = get.pepit("CONTACT"),
+  add = get.pepit("ADD"),
   add.ligand = TRUE,
-  surface = -1
+  access = -1,
+  pepchain = NULL
 )
 }
 \arguments{
@@ -27,7 +28,7 @@ get_binding_sites(
 
 \item{add.ligand}{add ligand to the output pdb}
 
-\item{surface}{if >0 keep only surface atoms on returned pdb}
+\item{access}{if >0 keep only surface atoms on returned pdb}
 }
 \value{
 pdb bio3d structure

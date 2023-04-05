@@ -10,7 +10,6 @@
 #'
 #' @examples
 get_carbons=function(pdb, inds, add="calpha") {
-  cat("add_carbons...\n")
   #ind=inds$atom
   ind=c()
   res=unique(pdb$atom[inds$atom,c("resno", "chain")])
