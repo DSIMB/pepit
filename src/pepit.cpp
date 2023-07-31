@@ -82,6 +82,36 @@ IntegerMatrix vertex_ho(StringVector XProp, StringVector XResname, StringVector 
   return V(Range(0,v-1),_);
 }
 
+//' Constructs vertices of correspondence graph based on residues
+//'
+//' @param XResno size N vector of residue number
+//' @param XResname size N vector of residue names 
+//' @param YResno size M vector of residue number
+//' @param YResname size M vector of residue names 
+//' @param V output, matrix Nvx2 of vertices
+//' @export
+// [[Rcpp::export]]
+IntegerMatrix vertex_ho2(IntegerVector XResno, StringVector XResname, IntegerVector YResno, StringVector YResname) {
+  int i,ip,v=0;
+  int N=XResno.size();
+  int M=YResno.size();
+  IntegerMatrix V(N*M,2);
+  for(i=0; i<M; i++) {
+    for (ip=0; ip<N; ip++) {
+      if (strcmp(XResname(ip),YResname(i))==0) {
+        V(v,0)=i+1;
+        V(v,1)=ip+1;
+        v++;
+      }
+    }
+  }
+  if (v<=1) {
+    fprintf(stderr,"no product graph...\n");
+    return V(Range(0,0),_);
+  }
+  return V(Range(0,v-1),_);
+}
+
 //' Constructs correspondence graph
 //'
 //' @param X matrix Nx3
@@ -104,7 +134,8 @@ IntegerMatrix buildGraph(NumericMatrix X, NumericMatrix Y, IntegerMatrix V, doub
       d1=distloc(Y,V(i,0),V(j,0)); // dist between atoms i and j in Y
       d2=distloc(X,V(i,1),V(j,1)); // dist between atoms i and j in X
       d=fabs(d1-d2);
-      if (d<=deltadist && d1>=mindist && d2>=mindist && d1<=maxdist && d2<=maxdist) {
+      if (d<=deltadist &&  V(i,0)!=V(j,0) && V(i,1)!=V(j,1) && d1<=maxdist && d2<=maxdist) {
+//     if (d<=deltadist && d1>=mindist && d2>=mindist && d1<=maxdist && d2<=maxdist) {
         Etmp.push_back(V(i,1));
         Etmp.push_back(V(j,1));
         Etmp.push_back(V(i,0));
@@ -148,8 +179,62 @@ IntegerMatrix buildGraph_ho(NumericMatrix X, IntegerVector XResno, NumericMatrix
       d1=distloc(Y,V(i,0),V(j,0)); // dist between atoms i and j in Y
       d2=distloc(X,V(i,1),V(j,1)); // dist between atoms i and j in X
       d=fabs(d1-d2);
-      gap=gaploc(XResno,V(i,1),V(j,1));
-      if (d<=deltadist && d1>=mindist && d2>=mindist && d1<=maxdist && d2<=maxdist && gap<=maxgap) {
+      //gap=gaploc(XResno,V(i,1),V(j,1));
+      gap=gaploc(YResno,V(i,0),V(j,0));
+      if (d<=deltadist &&  V(i,0)!=V(j,0) && V(i,1)!=V(j,1) && gap<=maxgap) {
+//     if (d<=deltadist && d1>=mindist && d2>=mindist && d1<=maxdist && d2<=maxdist && gap<=maxgap) {
+        Etmp.push_back(V(i,1));
+        Etmp.push_back(V(j,1));
+        Etmp.push_back(V(i,0));
+        Etmp.push_back(V(j,0));
+        e+=1;
+      }
+    }
+  }
+  int n=Etmp.size();
+  IntegerMatrix E(e,4);
+  for (i=0,j=0; i<n-3; i+=4,j++) {
+    E(j,0)=Etmp[i];
+    E(j,1)=Etmp[i+1];
+    E(j,2)=Etmp[i+2];
+    E(j,3)=Etmp[i+3];
+  }
+  Etmp.clear();
+  return E;
+}
+
+
+//' Constructs correspondence graph
+//'
+//' @param X matrix Nx3
+//' @param Y matrix Nx3
+//' @param V matrix Nvx2
+//' @param deltadist double
+//' @param mindist double
+//' @param maxdist double
+//' @export
+// [[Rcpp::export]]
+IntegerMatrix buildGraph_ho2(NumericMatrix X, IntegerVector XResno, IntegerVector XResInd, NumericMatrix Y, IntegerVector YResno, IntegerVector YResInd, IntegerMatrix V, double deltadist, int maxgap) {
+  int i,j,k,l,nv, e=0, gap;
+  double d,d1,d2;
+  std::vector<int> Etmp;
+  
+  nv=V.nrow();
+
+  for(i=0; i<nv-1; i++) {
+    for (j=i+1; j<nv; j++) {
+      //printf("%d %d %d %d\n",V(i,0),V(j,0),V(i,1),V(j,1));
+      d=0.0;
+      for (k=0; k<YResInd(V(i,0))-YResInd(V(i,0)-1); k++) {
+        for (l=0; l<XResInd(V(i,1))-XResInd(V(i,1)-1); l++) {
+          d1=distloc(Y, YResInd(V(i,0)-1)+k, YResInd(V(j,0)-1)+l); // dist between residue Vi, atom k and Vj,k in Y
+          d2=distloc(X, XResInd(V(i,1)-1)+k, XResInd(V(j,1)-1)+l); // dist between residue Vi, atom k and Vj,k in X
+          d=fmax(d,fabs(d1-d2));
+        }
+      }
+      //gap=gaploc(XResno,V(i,1),V(j,1));
+      gap=gaploc(YResno, YResInd(V(i,0)-1), YResInd(V(j,0)-1));
+      if (d<=deltadist &&  V(i,0)!=V(j,0) && V(i,1)!=V(j,1) && gap<=maxgap) {
         Etmp.push_back(V(i,1));
         Etmp.push_back(V(j,1));
         Etmp.push_back(V(i,0));

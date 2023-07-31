@@ -5,14 +5,18 @@
 \title{superpose query (binding site) onto the target. 
 The ligand is kept while the binding site is removed.}
 \usage{
-superpose_sites(cluster, query, target, pepchain)
+superpose_sites(cluster, query, target, pepchain = NULL, resid = NULL)
 }
 \arguments{
 \item{cluster}{indices of mapping edges}
 
-\item{query}{pdb structure containing bs and ligand as returned by bio3d}
+\item{query}{pdb structure containing bs and ligand as returned by bio3d (mobile)}
 
-\item{target}{pdb structure of target protein as returned by bio3d}
+\item{target}{pdb structure of target protein as returned by bio3d (fixed)}
+
+\item{pepchain}{chain, part of the query that is moved (if not null)}
+
+\item{resid}{list of residue noumbers, part of the query that is moved (if not null)}
 }
 \value{
 a pdb structure containing the moved ligand

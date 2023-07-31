@@ -27,5 +27,6 @@ get_carbons=function(pdb, inds, add="calpha") {
 chain_find_carbons=function(pdb, chain, resno, add) {
     if (add=="calpha") sel=bio3d::atom.select(pdb, elety="CA", chain=chain, resno=resno)
     if (add=="cab") sel=bio3d::atom.select(pdb, elety=c("CA","CB"), chain=chain, resno=resno)
+    if (add=="cbeta") sel=bio3d::atom.select(pdb, string="cbeta", chain=chain, resno=resno) #!backbone+cbeta
     sel
 }

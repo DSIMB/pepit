@@ -1,7 +1,7 @@
 [
     {
         "file": "/home/frederic/pepit/src/pepit.cpp",
-        "file_last_write": 1678878190.0,
+        "file_last_write": 1685699128.0,
         "definitions": [
             {
                 "usr": "c:@F@distloc#I#I#I#",
@@ -40,12 +40,21 @@
                 "column": 15
             },
             {
+                "usr": "c:@F@vertex_ho2#I#I#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "vertex_ho2(Rcpp::IntegerVector, Rcpp::StringVector, Rcpp::IntegerVector, Rcpp::StringVector)",
+                "file": "/home/frederic/pepit/src/pepit.cpp",
+                "line": 94,
+                "column": 15
+            },
+            {
                 "usr": "c:@F@buildGraph#I#I#I#d#d#d#",
                 "kind": 6,
                 "parent_name": "",
                 "name": "buildGraph(Rcpp::NumericMatrix, Rcpp::NumericMatrix, Rcpp::IntegerMatrix, double, double, double)",
                 "file": "/home/frederic/pepit/src/pepit.cpp",
-                "line": 95,
+                "line": 125,
                 "column": 15
             },
             {
@@ -54,7 +63,16 @@
                 "parent_name": "",
                 "name": "buildGraph_ho(Rcpp::NumericMatrix, Rcpp::IntegerVector, Rcpp::NumericMatrix, Rcpp::IntegerVector, Rcpp::IntegerMatrix, double, double, double, int)",
                 "file": "/home/frederic/pepit/src/pepit.cpp",
-                "line": 138,
+                "line": 169,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@buildGraph_ho2#I#I#I#I#I#I#I#d#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "buildGraph_ho2(Rcpp::NumericMatrix, Rcpp::IntegerVector, Rcpp::IntegerVector, Rcpp::NumericMatrix, Rcpp::IntegerVector, Rcpp::IntegerVector, Rcpp::IntegerMatrix, double, int)",
+                "file": "/home/frederic/pepit/src/pepit.cpp",
+                "line": 217,
                 "column": 15
             },
             {
@@ -63,7 +81,7 @@
                 "parent_name": "",
                 "name": "mapping_dist_sum2(Rcpp::NumericMatrix, Rcpp::IntegerVector, Rcpp::IntegerVector, Rcpp::NumericMatrix, Rcpp::IntegerVector, Rcpp::IntegerVector, double)",
                 "file": "/home/frederic/pepit/src/pepit.cpp",
-                "line": 177,
+                "line": 262,
                 "column": 15
             },
             {
@@ -72,7 +90,7 @@
                 "parent_name": "",
                 "name": "selectLinks(Rcpp::IntegerVector, Rcpp::IntegerMatrix, Rcpp::NumericMatrix, Rcpp::IntegerVector, Rcpp::NumericMatrix, Rcpp::IntegerVector, double, int, int)",
                 "file": "/home/frederic/pepit/src/pepit.cpp",
-                "line": 208,
+                "line": 293,
                 "column": 15
             }
         ]
