@@ -33,13 +33,10 @@ D=read.table(infile, header=TRUE)
 for (i in 1:nrow(D)) {
   id=as.character(D[i,1])
   pdb=bio3d::read.pdb(id)
-  pos=gregexpr(".pdb",id)[[1]]
-  id=substring(id,pos-4,pos-1)
   tchain=as.character(D[i,2])# a target chain is can be a list of chains (e.g. H,L)
   lchain=as.character(D[i,3])
   lchain=substring(lchain,1,1) #only one ligand chain
   outfile=paste(BSBANK,"/",id,tchain,":",lchain,".pdb",sep="")
-  
   
   chainlist=unique(pdb$atom$chain)
   tchain=unlist(strsplit(tchain,split=""))
