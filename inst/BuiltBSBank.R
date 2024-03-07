@@ -23,7 +23,7 @@ library(pepit)
 #
 # user defined parameters
 #
-set.pepit("CONTACT", 5.0)
+set.pepit("CONTACT", 8.0)
 set.pepit("ADD", "calpha")
 set.pepit("ACC", 10)
 set.pepit("radius", 1.4)
@@ -46,8 +46,8 @@ for (i in 1:nrow(D)) {
   pdb=bio3d::trim.pdb(pdb, string="protein")
   pdb=bio3d::trim.pdb(pdb, string="noh")
   pdb=type_atoms(pdb, ligchain=lchain) # ligchain is not typed
-  holo=access_atoms(pdb, chains=tchain, add=get.pepit("ADD"), minacc=10, select=FALSE)
-  bsnlig=get_binding_sites(holo, target_chains=tchain, ligand_chains=lchain, add=get.pepit("ADD"), add.ligand=TRUE, access=10)
+  holo=access_atoms(pdb, chains=tchain, add=get.pepit("ADD"), minacc=get.pepit("ACC"), select=FALSE)
+  bsnlig=get_binding_sites(holo, target_chains=tchain, ligand_chains=lchain, add=get.pepit("ADD"), add.ligand=TRUE, access=get.pepit("ACC"))
   #bsnlig$atom$chain[bsnlig$atom$chain==lchain]="P"
   if (!is.null(bsnlig)) bio3d::write.pdb(bsnlig, file=outfile)
 }

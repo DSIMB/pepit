@@ -22,6 +22,8 @@ pkg.pepit$MAXCLASHES = 10
 pkg.pepit$radius=1.4
 pkg.pepit$PVALUE=FALSE
 pkg.pepit$AAGAP=10
+pkg.pepit$PCCODE=c(A=1, C=3, D=5, E=5, F=1, G=2, H=6, I=1, K=6, L=1, M=1, N=4, P=1, Q=4, R=6, S=4, T=4, V=1, W=2, X=0, Y=4)
+pkg.pepit$HSECUTOFF=13
 ## utile ?
 EMPTY_GRAPH=-3
 NO_CLIQUE=-2

@@ -1,19 +1,21 @@
-
 #' Atom typing
 #'
 #' @param pdb a pdb structure returned by bio3d::read.pdb
 #' @description The function modifies the element symbol field (elesy)
-#' @description alpha carbons changed to a, beta carbons changed to b
-#' @description aromatic carbons changed to A, other carbons remain C
+#' @description alpha carbons changed to A, beta carbons changed to B,
+#' @description other backbone carbons remains C,
+#' @description aromatic carbons changed to a, other side-chain atoms changed to
+#' @description to lower case (o,n,c)
+#' @description ligand chain elements are not modified
 #' @return modified pdb structure
 #' @import bio3d
 #' @export
 #'
 #' @examples
-type_atoms=function(pdb, ligchain=NULL) {
+type_atoms=function(pdb, ligchains=NULL) {
     #pdb=suppressWarnings(bio3d::read.pdb(pdbfile))
-    if (!is.null(ligchain)) {
-      indlig=atom.select(pdb, chain=ligchain)
+    if (!is.null(ligchains)) {
+      indlig=atom.select(pdb, chain=ligchains)
       liganame=pdb$atom$elesy[indlig$atom]
     }
     if (any(is.na(pdb$atom$elesy))) {
@@ -23,10 +25,13 @@ type_atoms=function(pdb, ligchain=NULL) {
     aname=tolower(pdb$atom$elesy[indbb$atom])
     pdb$atom$elesy[indbb$atom]=aname
     pdb$atom$elesy[pdb$calpha]="A"
-    pdb$atom$elesy[pdb$atom$elety=="CB"]="b"
+    pdb$atom$elesy[pdb$atom$elety=="CB"]="B"
     pdb$atom$insert[is.na(pdb$atom$insert)]=""
 
     resno=unique(pdb$atom[,c("resno", "insert", "chain")])
+    sel=atom.select(pdb,string="sidechain")
+    pdb$atom$elesy[sel$atom]=tolower(pdb$atom$elesy[sel$atom])
+    
     for (k in 1:nrow(resno))  {
       resn=resno[k,1]
       ins=resno[k,2]
@@ -64,7 +69,7 @@ type_atoms=function(pdb, ligchain=NULL) {
 	      }
       }
    }
-   if (!is.null(ligchain)) pdb$atom$elesy[indlig$atom]=liganame
+   if (!is.null(ligchains)) pdb$atom$elesy[indlig$atom]=liganame
    pdb
 }
 #' Atom typing old

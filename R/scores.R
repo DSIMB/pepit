@@ -63,7 +63,7 @@ score_clusters = function(clusters, X, Y, score_function=get.pepit("SCORE"), del
 #' @export
 #'
 #' @examples
-p_values=function(score) {
+p_values=function(score, loc, scale) {
   m = mean(score)
   s = sd(score)
   scale = sqrt(6)/pi*s
@@ -71,4 +71,21 @@ p_values=function(score) {
   sc = (score - loc)/scale
   1 - exp(-exp(-sc))
 }
+
+#' evaluate evd
+#'
+#' @param score a
+#' @return parameters of extreme distribution loc and scale
+#' @export
+#'
+#' @examples
+evd=function(score) {
+  m = mean(score)
+  s = sd(score)
+  scale = sqrt(6)/pi*s
+  loc = m + scale*digamma(1) # digamma(1)=-Euler
+  list(scale=scale, loc=loc)
+}
+
+
 

@@ -4,7 +4,7 @@
 \alias{type_atoms}
 \title{Atom typing}
 \usage{
-type_atoms(pdb, ligchain = NULL)
+type_atoms(pdb, ligchains = NULL)
 }
 \arguments{
 \item{pdb}{a pdb structure returned by bio3d::read.pdb}
@@ -15,7 +15,13 @@ modified pdb structure
 \description{
 The function modifies the element symbol field (elesy)
 
-alpha carbons changed to a, beta carbons changed to b
+alpha carbons changed to A, beta carbons changed to B,
 
-aromatic carbons changed to A, other carbons remain C
+other backbone carbons remains C,
+
+aromatic carbons changed to a, other side-chain atoms changed to
+
+to lower case (o,n,c)
+
+ligand chain elements are not modified
 }

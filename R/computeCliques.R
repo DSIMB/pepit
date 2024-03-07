@@ -53,11 +53,8 @@ merge_cliques<-function(clusters,N,common=get.pepit("MERGECLIQUE")) {
 pepit_cliques=function(g, X, Y, minclique=get.pepit("MINCLIQUE"), bcmin=get.pepit("BCMIN")) {
   N=nrow(X);M=nrow(Y)
   cl=extract_cliques(g, minclique)
-  print(cl)
-  cat("N=",N, "M=", M, "\n")
   ##
   if (cl$size<minclique) {
-    cat("cl$size<minclique\n")
     return(NULL)
   }
   nbclique=length(cl$clique)
@@ -69,10 +66,7 @@ pepit_cliques=function(g, X, Y, minclique=get.pepit("MINCLIQUE"), bcmin=get.pepi
     J=(C-1)%/%N+1# query indices
     bc[i]=BCscore(X[I,], Y[J,])
   }
-  print(bc)
-  cat("bcmin=",bcmin,"\n")
   cl$clique=cl$clique[bc>=bcmin]
-  print(cl)
   #
   if (length(cl$clique)==0) {
     cat("no valid clique\n")
@@ -89,10 +83,8 @@ pepit_cliques=function(g, X, Y, minclique=get.pepit("MINCLIQUE"), bcmin=get.pepi
 pepit_cliques2=function(g, Nres, X, XResInd, Y, YResInd, minclique=get.pepit("MINCLIQUE"), bcmin=get.pepit("BCMIN")) {
   N=nrow(X);M=nrow(Y)
   cl=extract_cliques(g, minclique)
-  cat("N=",N, "M=", M, "\n")
   ##
   if (cl$size<minclique) {
-    cat("cl$size<minclique\n")
     return(NULL)
   }
   nbclique=length(cl$clique)
@@ -114,7 +106,6 @@ pepit_cliques2=function(g, Nres, X, XResInd, Y, YResInd, minclique=get.pepit("MI
     bc[ic]=BCscore(X[Iatom,], Y[Jatom,])
     nres[ic]=length(I)
   }
-  print(bc)
   cl$clique=cl$clique[bc>=bcmin]
   bc=bc[bc>=bcmin]
   size=size[bc>=bcmin]
@@ -167,7 +158,6 @@ build_graph=function(types, X, XProp, Y, YProp, mindist, maxdist, deltadist, ver
     types=c("A","C","N","O")
     J=which(YProp%in%types)
     I=which(XProp%in%types)
-   cat ("+build_graph::",length(I),length(J),"\n")
   }
   V=vertex(XProp[I], YProp[J])
   if (verbose) cat("vertices:",length(I), length(J),length(V)/2,"\n")
