@@ -26,6 +26,7 @@ type_atoms=function(pdb, ligchains=NULL) {
     pdb$atom$elesy[indbb$atom]=aname
     pdb$atom$elesy[pdb$calpha]="A"
     pdb$atom$elesy[pdb$atom$elety=="CB"]="B"
+    insert = pdb$atom$insert #save inserts
     pdb$atom$insert[is.na(pdb$atom$insert)]=""
 
     resno=unique(pdb$atom[,c("resno", "insert", "chain")])
@@ -70,6 +71,7 @@ type_atoms=function(pdb, ligchains=NULL) {
       }
    }
    if (!is.null(ligchains)) pdb$atom$elesy[indlig$atom]=liganame
+   pdb$atom$insert = insert # back up des insert^
    pdb
 }
 #' Atom typing old

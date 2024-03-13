@@ -11,12 +11,25 @@ gaploc <- function(ResNo, ind1, ind2) {
 
 #' Constructs vertices of correspondence graph
 #'
+#' @param XProp data frame  N nrows
+#' @param YProp data frame  M nrows
+#' @param mode 0 atom types comparison, 1 all features' comparison
+#' @param size estimated initial size of V
+#' @param V output matrix Nvx2 of vertices
+#' @description data.frame(eleno, elety, resid, chain, resno, insert, x, y, z, pc, hseu, hsed)
+#' @export
+vertex <- function(XProp, YProp, mode, size, hse) {
+    .Call('_pepit_vertex', PACKAGE = 'pepit', XProp, YProp, mode, size, hse)
+}
+
+#' Constructs vertices of correspondence graph
+#'
 #' @param XProp size N vector of atom types
 #' @param YProp size M vector of atom types
 #' @param V output matrix Nvx2 of vertices
 #' @export
-vertex <- function(XProp, YProp) {
-    .Call('_pepit_vertex', PACKAGE = 'pepit', XProp, YProp)
+vertex2 <- function(XProp, XHSE, YProp, YHSE) {
+    .Call('_pepit_vertex2', PACKAGE = 'pepit', XProp, XHSE, YProp, YHSE)
 }
 
 #' Constructs vertices of correspondence graph
@@ -89,9 +102,5 @@ mapping_dist_sum2 <- function(X, I, CI, Y, J, CJ, thresh) {
 
 selectLinks <- function(C, V, X, XResno, Y, YResno, thresh, nbnei, maxgap) {
     .Call('_pepit_selectLinks', PACKAGE = 'pepit', C, V, X, XResno, Y, YResno, thresh, nbnei, maxgap)
-}
-
-rcpp_hello_world <- function() {
-    .Call('_pepit_rcpp_hello_world', PACKAGE = 'pepit')
 }
 

@@ -145,32 +145,30 @@ sort_clusters=function(clusters,N, X, Y, score_function=get.pepit("SCORE"), thre
 }
 
 #
-# build graph with atom properties (typing)
+# build graph with atom features: hse and pc
 #
-build_graph=function(types, X, XProp, Y, YProp, mindist, maxdist, deltadist, verbose=FALSE) {
+build_graph = function(types, X, XProp, Y, YProp, mindist, maxdist, deltadist, verbose=FALSE) {
   N=nrow(X)
-  J=which(YProp%in%types)
-  I=which(XProp%in%types)
-  cat ("build correspondence graph mapping ",length(I),"atoms to",length(J),"atoms\n")
+  J=which(YProp$elety %in% types)
+  I=which(XProp$elety %in% types)
+  cat ("build correspondence graph mapping ",length(J),"atoms to",length(I),"atoms\n")
   Mmotif=length(J)
   Nmotif=length(I)
   if (Mmotif<get.pepit("MINCLIQUE") | Nmotif<get.pepit("MINCLIQUE")) {
     types=c("A","C","N","O")
-    J=which(YProp%in%types)
-    I=which(XProp%in%types)
+    J=which(YProp$elety %in% types)
+    I=which(XProp$elety %in% types)
   }
-  V=vertex(XProp[I], YProp[J])
+  V=vertex(XProp[I,,drop=FALSE], YProp[J,,drop=FALSE], length(I)*length(J), mode=get.pepit("MODE"), hse=10)
   if (verbose) cat("vertices:",length(I), length(J),length(V)/2,"\n")
   if (all(V==0) | length(V)<=1) return(NULL)
   V=cbind(J[V[,1]],I[V[,2]]) # atom ids 1..M, 1..N
   #nV=nrow(V)
   E=buildGraph(X, Y, V, as.double(deltadist), as.double(mindist), as.double(maxdist))
-  cat("---> edges:",nrow(E),"\n")
   while (nrow(E)>get.pepit("MAXEDGES")){
     cat("graph too large, reducing it\n")
     maxdist=maxdist/2.;
     E=buildGraph(X, Y, V, deltadist, mindist, maxdist)
-    cat("---> edges:",nrow(E),"\n")
   }
   if (nrow(E)==0) {
     message("no edge...")
@@ -337,10 +335,10 @@ cliques=function(X, XProp, Y, YProp, deltadist, mindist, maxdist, types, verbose
   # merging cliques
   #
   if (verbose) cat("clique merge...\n")
-  clusters=merge_cliques(cliques,N, get.pepit("INTERCLIQUE"))
+  clusters=merge_cliques(cliques, N, get.pepit("INTERCLIQUE"))
   nbclique=length(clusters)
   cat("nb. of merged cliques = ", nbclique, "\n")
-  clusters=sort_clusters(clusters,N,X,Y, get.pepit("SCORE"))
+  clusters=sort_clusters(clusters, N, X, Y, get.pepit("SCORE"))
   nbclique=length(clusters)
   if (nbclique==0) {
     message("no valid clique after merging")

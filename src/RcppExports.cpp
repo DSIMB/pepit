@@ -37,14 +37,31 @@ BEGIN_RCPP
 END_RCPP
 }
 // vertex
-IntegerMatrix vertex(CharacterVector XProp, CharacterVector YProp);
-RcppExport SEXP _pepit_vertex(SEXP XPropSEXP, SEXP YPropSEXP) {
+IntegerMatrix vertex(DataFrame XProp, DataFrame YProp, int mode, int size, int hse);
+RcppExport SEXP _pepit_vertex(SEXP XPropSEXP, SEXP YPropSEXP, SEXP modeSEXP, SEXP sizeSEXP, SEXP hseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type XProp(XPropSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type YProp(YPropSEXP);
+    Rcpp::traits::input_parameter< int >::type mode(modeSEXP);
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< int >::type hse(hseSEXP);
+    rcpp_result_gen = Rcpp::wrap(vertex(XProp, YProp, mode, size, hse));
+    return rcpp_result_gen;
+END_RCPP
+}
+// vertex2
+IntegerMatrix vertex2(CharacterVector XProp, IntegerMatrix XHSE, CharacterVector YProp, IntegerMatrix YHSE);
+RcppExport SEXP _pepit_vertex2(SEXP XPropSEXP, SEXP XHSESEXP, SEXP YPropSEXP, SEXP YHSESEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type XProp(XPropSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type XHSE(XHSESEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type YProp(YPropSEXP);
-    rcpp_result_gen = Rcpp::wrap(vertex(XProp, YProp));
+    Rcpp::traits::input_parameter< IntegerMatrix >::type YHSE(YHSESEXP);
+    rcpp_result_gen = Rcpp::wrap(vertex2(XProp, XHSE, YProp, YHSE));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -166,21 +183,12 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_hello_world
-List rcpp_hello_world();
-RcppExport SEXP _pepit_rcpp_hello_world() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpp_hello_world());
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pepit_distloc", (DL_FUNC) &_pepit_distloc, 3},
     {"_pepit_gaploc", (DL_FUNC) &_pepit_gaploc, 3},
-    {"_pepit_vertex", (DL_FUNC) &_pepit_vertex, 2},
+    {"_pepit_vertex", (DL_FUNC) &_pepit_vertex, 5},
+    {"_pepit_vertex2", (DL_FUNC) &_pepit_vertex2, 4},
     {"_pepit_vertex_ho", (DL_FUNC) &_pepit_vertex_ho, 4},
     {"_pepit_vertex_ho2", (DL_FUNC) &_pepit_vertex_ho2, 4},
     {"_pepit_buildGraph", (DL_FUNC) &_pepit_buildGraph, 6},
@@ -188,7 +196,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pepit_buildGraph_ho2", (DL_FUNC) &_pepit_buildGraph_ho2, 9},
     {"_pepit_mapping_dist_sum2", (DL_FUNC) &_pepit_mapping_dist_sum2, 7},
     {"_pepit_selectLinks", (DL_FUNC) &_pepit_selectLinks, 9},
-    {"_pepit_rcpp_hello_world", (DL_FUNC) &_pepit_rcpp_hello_world, 0},
     {NULL, NULL, 0}
 };
 

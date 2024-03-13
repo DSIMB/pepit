@@ -139,7 +139,8 @@ extend_cliques=function(X, XProp, Y, YProp, cliques, deltadist, score_function=g
   N=nrow(X)
   nbclique=length(cliques)
   clusters=list()
-  V=vertex(XProp, YProp)
+
+  V=vertex(XProp, YProp, mode=get.pepit("MODE"), size=0, hse=100)
   for (ic in 1:nbclique) {
     cat("enlarging clique ", ic, "\n")
     C=cliques[[ic]]

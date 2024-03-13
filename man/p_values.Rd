@@ -4,7 +4,7 @@
 \alias{p_values}
 \title{evaluate pvalues from all scores}
 \usage{
-p_values(score)
+p_values(score, loc, scale)
 }
 \arguments{
 \item{score}{vector of scores}

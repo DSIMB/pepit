@@ -27,6 +27,7 @@ set.pepit("NBHITS", 100)
 set.pepit("POSE", TRUE)
 set.pepit("TYPES", c("A","C","O","N")) # backbone atoms
 set.pepit("PVALUE", TRUE)
+set.pepit("MODE", 0)
 #
 criteria = "score"
 #
@@ -77,6 +78,10 @@ if (length(resi)>0) target=bio3d::trim.pdb(target, resno=resi)
 X = target$atom[,c("x","y","z")]
 X = as.matrix(X)
 XProp = target$atom$elesy
+# compatibility with pepit2
+XProp = as.data.frame(XProp)
+names(XProp) = "elety"
+
 N = nrow(X)
 
 if (file.exists(bank) & dir.exists(bank)) { # if bank is directory of bs files
@@ -105,12 +110,14 @@ for (bsfile in bslist) {
   Y = bs$atom[,c("x","y","z")]
   Y = as.matrix(Y)
   YProp = bs$atom$elesy
-  
+  YProp = as.data.frame(YProp)
+  names(YProp) = "elety"
+
   result = cliques(X, XProp, Y, YProp, deltadist=1.0, mindist=0.0, maxdist=get.pepit("MAXDELTADIST"), types=get.pepit("TYPES"))
   if (length(result)==0) {
     cat("no clique\n")
     count = count+1
-    cat(count, bsfile, tfile, deltadist, nrow(Y), 0, 100, 0, maxdist+1, 0, "\n", file=allscorefile, append=TRUE)
+    cat(count, bsfile, tfile, deltadist, nrow(Y), 0, 100, 0, maxdist+1, 0, 0, "\n", file=allscorefile, append=TRUE)
     next
   }
   clusters = extend_cliques(X, XProp, Y, YProp, result, deltadist=deltadist)
