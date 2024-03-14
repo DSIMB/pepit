@@ -25,10 +25,11 @@ set.pepit("MAXCLASHES", 20) # clashes allowed
 set.pepit("NBCLIQUES", 5)
 set.pepit("NBHITS", 100)
 set.pepit("POSE", TRUE)
-set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # backbone atoms
-#set.pepit("TYPES", c("A","C","O","N")) 
+set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # all atoms
+#set.pepit("TYPES", c("A","C","O","N")) # backbone atoms
 set.pepit("PVALUE", TRUE)
 set.pepit("MODE",1)
+set.pepit("HSE", 10)
 #
 criteria = "score"
 #

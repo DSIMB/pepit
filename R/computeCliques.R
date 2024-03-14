@@ -159,7 +159,7 @@ build_graph = function(types, X, XProp, Y, YProp, mindist, maxdist, deltadist, v
     J=which(YProp$elety %in% types)
     I=which(XProp$elety %in% types)
   }
-  V=vertex(XProp[I,,drop=FALSE], YProp[J,,drop=FALSE], length(I)*length(J), mode=get.pepit("MODE"), hse=10)
+  V=vertex(XProp[I,,drop=FALSE], YProp[J,,drop=FALSE], length(I)*length(J), mode=get.pepit("MODE"), hse=get.pepit("HSE"))
   if (verbose) cat("vertices:",length(I), length(J),length(V)/2,"\n")
   if (all(V==0) | length(V)<=1) return(NULL)
   V=cbind(J[V[,1]],I[V[,2]]) # atom ids 1..M, 1..N

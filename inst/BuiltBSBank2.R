@@ -38,7 +38,7 @@ for (i in 1:nrow(D)) {
   lchain=as.character(D[i,3])
   lchain=substring(lchain,1,1) #only one ligand chain
   outfile=paste(BSBANK,"/",id,tchain,":",lchain,".dat",sep="")
-  
+
   chainlist=unique(pdb$atom$chain)
   tchain=unlist(strsplit(tchain,split=""))
   tchain=intersect(tchain, chainlist)
@@ -49,17 +49,16 @@ for (i in 1:nrow(D)) {
   
   inds = get_binding_sites_2(pdb, target_chains=tchain, ligand_chains=lchain, add=get.pepit("ADD"))
   
-  target.pdb=bio3d::trim.pdb(pdb, chain=tchain)
-  target.data = encode(target.pdb)
-  eleno = pdb$atom$eleno[inds$atom]
-  target.data = target.data[target.data$eleno%in%eleno,]
-  
-  ligand.pdb = bio3d::trim.pdb(pdb, chain=lchain)
-  
+  for (ch in tchain) {
+    target.pdb=bio3d::trim.pdb(pdb, chain=ch)
+    target.data = encode(target.pdb)
+    eleno = pdb$atom$eleno[inds$atom]
+    target.data = target.data[target.data$eleno%in%eleno,]
+    col = ifelse(file.exists(outfile), FALSE, TRUE)
+    write.table(target.data, quote=FALSE, col.names = col, row.names=FALSE, file=outfile) #
+  }
   id = substring(id,1,4)
-  outfile=paste(BSBANK,"/",id,tchain,":",lchain,".dat",sep="")
-  write.table(target.data, quote=FALSE, row.name=FALSE, file=outfile)
-
+  ligand.pdb = bio3d::trim.pdb(pdb, chain=lchain)
   outfile=paste(BSBANK,"/",id,lchain,".pdb",sep="")
   bio3d::write.pdb(ligand.pdb, file=outfile)
 }

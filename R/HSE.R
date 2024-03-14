@@ -31,18 +31,18 @@ HSEA = function(pdb, cutoff=13) {
      hseau = c()
      hsead = c()
      for (i in 2:(n-1)) {
-         cacb = XCA[i+1,] - 2*XCA[i,] + XCA[i-1,]
-    	 sel = atom.select(pdb, resno=nres[i], elety="CA")
-    	 selA = atom.select(pdb, string="calpha")
-    	 bs = binding.site(a=pdb, a.inds=selA, b.inds=sel, byres=FALSE, cutoff=cutoff)
-	 ind = bs$inds$atom
-    	 #bs = binding.site(a=pdb,  b.inds=sel, cutoff=cutoff)
-	 #ind = intersect(bs$inds$atom, selA$atom)
-	 Xnei = as.matrix(pdb$atom[ind, c("x","y","z")])
-    	 Xnei = -t(t(Xnei) - XCA[i,])
-	 up = Xnei%*%cacb
-    	 hseau = c(hseau, sum(up>0)) #HSEAU
-	 hsead = c(hsead, sum(up<0)) #HSEAD
+        cacb = XCA[i+1,] - 2*XCA[i,] + XCA[i-1,]
+    	  sel = atom.select(pdb, resno=nres[i], elety="CA")
+    	  selA = atom.select(pdb, string="calpha")
+    	  bs = binding.site(a=pdb, a.inds=selA, b.inds=sel, byres=FALSE, cutoff=cutoff)
+	      ind = bs$inds$atom
+    	  #bs = binding.site(a=pdb,  b.inds=sel, cutoff=cutoff)
+	      #ind = intersect(bs$inds$atom, selA$atom)
+	      Xnei = as.matrix(pdb$atom[ind, c("x","y","z")])
+    	  Xnei = -t(t(Xnei) - XCA[i,])
+	      up = Xnei%*%cacb
+    	  hseau = c(hseau, sum(up>0)) #HSEAU
+	      hsead = c(hsead, sum(up<0)) #HSEAD
     }
     seq = pdb$atom$resid[pdb$calpha]
     names(hseau) = seq[2:(n-1)]
@@ -60,35 +60,41 @@ HSEB = function(pdb, cutoff=13) {
      seq = pdb$atom$resid[pdb$calpha]
      for (i in 1:n) {
      	 res = trim(pdb, resno=nres[i])
-    	 if (res$atom$resid[1]=="GLY") {#pseudo-CB
- 	   xn = res$atom[atom.select(res, elety="N")$atom, c("x", "y", "z")]
-	   xc = res$atom[atom.select(res, elety="C")$atom, c("x", "y", "z")]
-	   can = xn - XCA[i,]
-	   cac = xc - XCA[i,]
-	   cac = cac/sqrt(sum(cac**2))
-	   cacb = rotm120(can, cac)
+    	 if (res$atom$resid[1] == "GLY") {#pseudo-CB
+ 	        xn = res$atom[atom.select(res, elety="N")$atom, c("x", "y", "z")]
+	        xc = res$atom[atom.select(res, elety="C")$atom, c("x", "y", "z")]
+	        if (length(xc) == 0 | length(xn == 0)) { # ugly for improbable case
+	          if (i>1 & i<n) cacb = XCA[i+1,] - 2*XCA[i,] + XCA[i-1,]
+	          if (i>1 & i==n) cacb = - XCA[i,] + XCA[i-1,]
+	          if (i==1 & i<n) cacb = XCA[i+1,] - XCA[i,]
+	        } else {
+	          can = xn - XCA[i,]
+	          cac = xc - XCA[i,]
+	          cac = cac/sqrt(sum(cac**2))
+	          cacb = rotm120(can, cac)
+	        }
     	 }
-	 if (res$atom$resid[1]!="GLY") {
+	     if (res$atom$resid[1] != "GLY") {
        	   xcb = res$atom[atom.select(res, elety="CB")$atom, c("x", "y", "z")]
        	   xcb = t(xcb)
-    	   cacb = xcb - XCA[i,]
-   	 }
+    	     cacb = xcb - XCA[i,]
+   	   }
     	 sel = atom.select(pdb, resno=nres[i], elety="CA")
     	 selA = atom.select(pdb, string="calpha")
     	 bs = binding.site(a=pdb, a.inds=selA, b.inds=sel, byres=FALSE, cutoff=cutoff)
     	 Xnei = as.matrix(pdb$atom[bs$inds$atom, c("x","y","z")])
-	 up = down = 0
-	 for (j in 1:nrow(Xnei)) {
-	     ps = sum((Xnei[j,]-XCA[i,])*cacb)
-	     up = up + ifelse(ps<0,1,0)
-	     down = down + ifelse(ps>=0,1,0)
-	 }
-   	 hsebu = c(hsebu, up)
+	     up = down = 0
+	     for (j in 1:nrow(Xnei)) {
+	          ps = sum((Xnei[j,]-XCA[i,])*cacb)
+	          up = up + ifelse(ps<0,1,0)
+	          down = down + ifelse(ps>=0,1,0)
+	     }
+   	   hsebu = c(hsebu, up)
     	 hsebd = c(hsebd, down)
-     }
-     names(hsebu) = seq
-     names(hsebd) = seq
-     list(hsebu=hsebu, hsebd=hsebd)
+      }
+      names(hsebu) = seq
+      names(hsebd) = seq
+      list(hsebu=hsebu, hsebd=hsebd)
 }
 
 CN = function(pdb, cutoff=13) {
