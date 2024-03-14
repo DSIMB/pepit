@@ -214,17 +214,18 @@ if (nrow(D)>0) {
   unlink(alignfile)
   ind = grep(">",L)
   ind = ind[noclash]
-  ind = ind[o]
-  ind = ind[1:nbhits]
-  for (i in ind) {
-    cat(L[i], "\n", file=alignfile, append=TRUE)
-    cat(L[(i+1):(i+2)], sep="\n", file=alignfile, append=TRUE)
-  }
-  
-  L = readLines(residfile)
-  unlink(residfile)
-  for (k in 1:length(o)) {
-    cat(">", k, "\n", file=residfile, append=TRUE)
-    cat(L[o[k]], "\n", file=residfile, append=TRUE)
-  }
+  if (length(ind)>0) {
+      ind = ind[o]
+      ind = ind[1:nbhits]
+      for (i in ind) {
+        cat(L[i], "\n", file=alignfile, append=TRUE)
+        cat(L[(i+1):(i+2)], sep="\n", file=alignfile, append=TRUE)
+      }  
+      L = readLines(residfile)
+      unlink(residfile)
+      for (k in 1:length(o)) {
+        cat(">", k, "\n", file=residfile, append=TRUE)
+        cat(L[o[k]], "\n", file=residfile, append=TRUE)
+      }
+    }
 }
