@@ -145,13 +145,10 @@ for (bsfile in bslist) {
           cat(sort(unique(bs.data$resno[J])), "\n", file=residfile, append=TRUE)
           nbclashes = 0
           if (get.pepit("POSE")) {
-            print(bsfile)
              pos = min(gregexpr(":", bsfile)[[1]])
              pepchain = substring(bsfile, pos+1, pos+1)
-             print(pepchain)
              bsid = substring(basename(bsfile),1,4)
              pepfile = paste(bank, "/",bsid, pepchain, ".pdb", sep="")
-             print(pepfile)
              peptide = bio3d::read.pdb(pepfile)
              # output binding site posed on target in a .pdb file 
              ligand.moved = superpose_sites2(clusters[[i]], bs.data, target.data, peptide)
@@ -171,6 +168,11 @@ for (bsfile in bslist) {
 # sort results for best scores and or p-value (scores here)
 #
 D = read.table(allscorefile, header=TRUE)
+Lalign = readLines(alignfile)
+unlink(alignfile)
+Lresid = readLines(residfile)
+unlink(residfile)
+
 if (0) { # p_value needs a larger number of scores of negative bs 
   value = D$alen/D$precision
   o = order(value, decreasing=TRUE)
@@ -183,21 +185,21 @@ if (0) { # p_value needs a larger number of scores of negative bs
 #
 # sorts output of pose files
 #
-if (nrow(D)>0) {
-      noclash = D$clashes<=get.pepit("MAXCLASHES")
-      pepnumbers = as.integer(D$index)
-      D = D[noclash,]
-      o = order(D$score, decreasing=TRUE)# 
-     	D = D[o, ]
-     	nbhits = min(get.pepit("NBHITS"), nrow(D))
-     	D = D[1:nbhits,]
+  noclash = D$clashes<=get.pepit("MAXCLASHES")
+  pepnumbers = as.integer(D$index)
+  D = D[noclash,]
+  o = order(D$score, decreasing=TRUE)# 
+  D = D[o, ]
+  nbhits = min(get.pepit("NBHITS"), nrow(D))
+  cat("+ nbhits=", nbhits, "\n")
 
-  if (get.pepit("POSE")) {
-     rm = setdiff(pepnumbers, D$index)
-     rmfiles = paste(prefix, "-", rm , ".pdb", sep="")
-     unlink(rmfiles)
-     liste=NULL
-     for (k in 1:nrow(D)) {
+  if (nbhits > 0) {
+    if (get.pepit("POSE")) {
+      rm = setdiff(pepnumbers, D$index)
+      rmfiles = paste(prefix, "-", rm , ".pdb", sep="")
+      unlink(rmfiles)
+      liste=NULL
+      for (k in 1:nrow(D)) {
         pepfile = paste(prefix, "-", D[k,"index"], ".pdb", sep="")
         if (!file.exists(pepfile)) next
         newfile = paste(prefix, "_peptide","-", k, ".pdb", sep="")
@@ -205,28 +207,24 @@ if (nrow(D)>0) {
         command = paste("mv ", pepfile, " ", newfile, sep="")
         cat(command,"\n")
         system(command)
-     }
-  }
-
-  D[,1] = 1:nrow(D)
-  write.table(D, quote=FALSE, row=FALSE, file=scorefile)
+      }
+    }
   
-  L = readLines(alignfile)
-  unlink(alignfile)
-  ind = grep(">",L)
-  ind = ind[noclash]
-  if (length(ind)>0) {
+    D[,1] = 1:nrow(D)
+    write.table(D, quote=FALSE, row=FALSE, file=scorefile)
+  
+    ind = grep(">",Lalign)
+    ind = ind[noclash]
+    if (length(ind)>0) {
       ind = ind[o]
       ind = ind[1:nbhits]
       for (i in ind) {
-        cat(L[i], "\n", file=alignfile, append=TRUE)
-        cat(L[(i+1):(i+2)], sep="\n", file=alignfile, append=TRUE)
+        cat(Lalign[i], "\n", file=alignfile, append=TRUE)
+        cat(Lalign[(i+1):(i+2)], sep="\n", file=alignfile, append=TRUE)
       }  
-      L = readLines(residfile)
-      unlink(residfile)
+      
       for (k in 1:length(o)) {
         cat(">", k, "\n", file=residfile, append=TRUE)
-        cat(L[o[k]], "\n", file=residfile, append=TRUE)
       }
     }
-}
+  }

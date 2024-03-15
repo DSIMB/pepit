@@ -54,8 +54,9 @@ for (i in 1:nrow(D)) {
     target.data = encode(target.pdb)
     eleno = pdb$atom$eleno[inds$atom]
     target.data = target.data[target.data$eleno%in%eleno,]
+    cat("outfile=", outfile, file.exists(outfile),"\n")
     col = ifelse(file.exists(outfile), FALSE, TRUE)
-    write.table(target.data, quote=FALSE, col.names = col, row.names=FALSE, file=outfile) #
+    write.table(target.data, quote=FALSE, col.names = col, row.names=FALSE, file=outfile, append=TRUE) #
   }
   id = substring(id,1,4)
   ligand.pdb = bio3d::trim.pdb(pdb, chain=lchain)
