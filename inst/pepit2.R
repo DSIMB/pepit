@@ -95,8 +95,6 @@ X = as.matrix(X)
 XProp = target.data
 N = nrow(X)
 
-
-
 if (!file.exists(allscorefile)) cat("index bs target precision bslen alen rmsd coverage meandist score clashes\n", file=allscorefile)
 count = 0
 for (bsfile in bslist) {
@@ -147,10 +145,13 @@ for (bsfile in bslist) {
           cat(sort(unique(bs.data$resno[J])), "\n", file=residfile, append=TRUE)
           nbclashes = 0
           if (get.pepit("POSE")) {
+            print(bsfile)
              pos = min(gregexpr(":", bsfile)[[1]])
              pepchain = substring(bsfile, pos+1, pos+1)
-             bsid = substring(bsfile, pos-5, pos-2)
+             print(pepchain)
+             bsid = substring(basename(bsfile),1,4)
              pepfile = paste(bank, "/",bsid, pepchain, ".pdb", sep="")
+             print(pepfile)
              peptide = bio3d::read.pdb(pepfile)
              # output binding site posed on target in a .pdb file 
              ligand.moved = superpose_sites2(clusters[[i]], bs.data, target.data, peptide)
@@ -214,17 +215,18 @@ if (nrow(D)>0) {
   unlink(alignfile)
   ind = grep(">",L)
   ind = ind[noclash]
-  ind = ind[o]
-  ind = ind[1:nbhits]
-  for (i in ind) {
-    cat(L[i], "\n", file=alignfile, append=TRUE)
-    cat(L[(i+1):(i+2)], sep="\n", file=alignfile, append=TRUE)
-  }
-  
-  L = readLines(residfile)
-  unlink(residfile)
-  for (k in 1:length(o)) {
-    cat(">", k, "\n", file=residfile, append=TRUE)
-    cat(L[o[k]], "\n", file=residfile, append=TRUE)
-  }
+  if (length(ind)>0) {
+      ind = ind[o]
+      ind = ind[1:nbhits]
+      for (i in ind) {
+        cat(L[i], "\n", file=alignfile, append=TRUE)
+        cat(L[(i+1):(i+2)], sep="\n", file=alignfile, append=TRUE)
+      }  
+      L = readLines(residfile)
+      unlink(residfile)
+      for (k in 1:length(o)) {
+        cat(">", k, "\n", file=residfile, append=TRUE)
+        cat(L[o[k]], "\n", file=residfile, append=TRUE)
+      }
+    }
 }
