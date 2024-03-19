@@ -44,7 +44,8 @@ max_bipartite_score=function(C, K, X, Y, gp, score_function, thresh) {
 
 max_bipartite=function(C, K, X, Y, thresh, verbose=FALSE, score_function=get.pepit("SCORE")) {
   Nref=min(nrow(X), nrow(Y))
-  N=nrow(X)
+  N=nrow(X)    
+
   KI=(K-1)%%N+1
   KJ=(K-1)%/%N+1
   P=cbind(paste("q",KJ,sep=""),paste("t",KI,sep=""))
@@ -60,7 +61,8 @@ max_bipartite=function(C, K, X, Y, thresh, verbose=FALSE, score_function=get.pep
   while(!stop & niter<20) {
     result=max_bipartite_score(Cprev, K, X, Y,  gp, score_function, thresh) #f(C1=result$C,C0=Cprev)
     nC=length(result$C)
-    C=filter_greedy(result$C,X,Y,score_function, thresh) # C1bar
+    if (result$score<=0) stop=TRUE
+    if(result$score>0) C=filter_greedy(result$C,X,Y,score_function, thresh) # C1bar
     if (verbose) cat("C0=",length(Cprev),"C1=",length(result$C),"C1b=",length(C),"C0.C1=",length(intersect(result$C,Cprev)),"C0.C1b=",length(intersect(C,Cprev)),"f(C1,C0)=",result$score,"\n")
     if (all(Cprev%in%C) & all(C%in%Cprev)) {stop=TRUE}
     if (verbose) cat("f(C1)=", matching_score(result$C,X, Y,score_function,thresh),"f(C1b)=", matching_score(C,X,Y,score_function,thresh),"\n")

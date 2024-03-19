@@ -21,7 +21,7 @@ set.pepit("PRECISION", 1.0)
 set.pepit("ADD","calpha")
 set.pepit("MINCLIQUE",6)
 set.pepit("MINSCORE", 0) # tous les scores
-set.pepit("MAXCLASHES", 20) # clashes allowed
+set.pepit("MAXCLASHES", 10) # clashes allowed
 set.pepit("NBCLIQUES", 5)
 set.pepit("NBHITS", 100)
 set.pepit("POSE", TRUE)
@@ -57,6 +57,10 @@ pdb = read.pdb(tfile)
 pdb = bio3d::trim.pdb(pdb, string="protein")
 pdb = bio3d::trim.pdb(pdb, string="noh")
 
+###
+unlink(scorefile)
+unlink(alignfile)
+unlink(residfile)
 ###
 resi=get.pepit("RESIDUES")
 resi=unlist(strsplit(resi,split=","))
@@ -95,7 +99,7 @@ X = as.matrix(X)
 XProp = target.data
 N = nrow(X)
 
-if (!file.exists(allscorefile)) cat("index bs target precision bslen alen rmsd coverage meandist score clashes\n", file=allscorefile)
+cat("index bs target precision bslen alen rmsd coverage meandist score clashes\n", file=allscorefile)
 count = 0
 for (bsfile in bslist) {
   cat("bsfile =", bsfile,"\n")
@@ -148,7 +152,7 @@ for (bsfile in bslist) {
              pos = min(gregexpr(":", bsfile)[[1]])
              pepchain = substring(bsfile, pos+1, pos+1)
              bsid = substring(basename(bsfile),1,4)
-             pepfile = paste(bank, "/",bsid, pepchain, ".pdb", sep="")
+             pepfile = paste(dirname(bsfile), "/",bsid, pepchain, ".pdb", sep="")
              cat("pepfile=", pepfile, "\n")
              peptide = bio3d::read.pdb(pepfile)
              # output binding site posed on target in a .pdb file 
@@ -173,6 +177,12 @@ if (nrow(D) == 0) {
   message("no hit found")
   q()
 }
+
+Lalign = readLines(alignfile)
+unlink(alignfile)
+Lresid = readLines(residfile)
+unlink(residfile)
+
 if (0) { # p_value needs a larger number of scores of negative bs 
   value = D$alen/D$precision
   o = order(value, decreasing=TRUE)
@@ -193,11 +203,6 @@ if (0) { # p_value needs a larger number of scores of negative bs
   nbhits = min(get.pepit("NBHITS"), nrow(D))
 
   if (nbhits > 0) {
-    print(alignfile)
-    Lalign = readLines(alignfile)
-    unlink(alignfile)
-    Lresid = readLines(residfile)
-    unlink(residfile)
     if (get.pepit("POSE")) {
       rm = setdiff(pepnumbers, D$index)
       rmfiles = paste(prefix, "-", rm , ".pdb", sep="")
@@ -216,7 +221,7 @@ if (0) { # p_value needs a larger number of scores of negative bs
   
     D[,1] = 1:nrow(D)
     write.table(D, quote=FALSE, row=FALSE, file=scorefile)
-  
+    
     ind = grep(">",Lalign)
     ind = ind[noclash]
     if (length(ind)>0) {
