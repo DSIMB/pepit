@@ -146,7 +146,7 @@ for (bsfile in bslist) {
           cat(">",count, bsfile, tfile, deltadist, scores$len[i], scores$alen[i], scores$rmsd[i], scores$coverage[i], scores$distorsion[i], scores$score[i], scores$pval[i],"\n", file=alignfile, append=TRUE)
           cat(bs_res, "\n", file=alignfile, append=TRUE)
           cat(target_res, "\n", file=alignfile, append=TRUE)
-          cat(sort(unique(bs.data$resno[J])), "\n", file=residfile, append=TRUE)
+          cat(sort(unique(target.data$resno[I])), "\n", file=residfile, append=TRUE)
           nbclashes = 0
           if (get.pepit("POSE")) {
              pos = min(gregexpr(":", bsfile)[[1]])
