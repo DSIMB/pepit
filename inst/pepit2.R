@@ -109,8 +109,8 @@ for (bsfile in bslist) {
   result = cliques(X, XProp, Y, YProp, deltadist=1.0, mindist=0.0, maxdist=get.pepit("MAXDELTADIST"), types=get.pepit("TYPES"))
   if (length(result)==0) {
     cat("no clique\n")
-    count = count+1
-    cat(count, bsfile, tfile, deltadist, nrow(Y), 0, 100, 0, maxdist+1, 0, 0, "\n", file=allscorefile, append=TRUE)
+    #count = count+1
+    #cat(count, bsfile, tfile, deltadist, nrow(Y), 0, 100, 0, maxdist+1, 0, 0, "\n", file=allscorefile, append=TRUE)
     next
   }
   clusters = extend_cliques(X, XProp, Y, YProp, result, deltadist=deltadist)
@@ -149,6 +149,7 @@ for (bsfile in bslist) {
              pepchain = substring(bsfile, pos+1, pos+1)
              bsid = substring(basename(bsfile),1,4)
              pepfile = paste(bank, "/",bsid, pepchain, ".pdb", sep="")
+             cat("pepfile=", pepfile, "\n")
              peptide = bio3d::read.pdb(pepfile)
              # output binding site posed on target in a .pdb file 
              ligand.moved = superpose_sites2(clusters[[i]], bs.data, target.data, peptide)
@@ -168,11 +169,10 @@ for (bsfile in bslist) {
 # sort results for best scores and or p-value (scores here)
 #
 D = read.table(allscorefile, header=TRUE)
-Lalign = readLines(alignfile)
-unlink(alignfile)
-Lresid = readLines(residfile)
-unlink(residfile)
-
+if (nrow(D) == 0) {
+  message("no hit found")
+  q()
+}
 if (0) { # p_value needs a larger number of scores of negative bs 
   value = D$alen/D$precision
   o = order(value, decreasing=TRUE)
@@ -191,9 +191,13 @@ if (0) { # p_value needs a larger number of scores of negative bs
   o = order(D$score, decreasing=TRUE)# 
   D = D[o, ]
   nbhits = min(get.pepit("NBHITS"), nrow(D))
-  cat("+ nbhits=", nbhits, "\n")
 
   if (nbhits > 0) {
+    print(alignfile)
+    Lalign = readLines(alignfile)
+    unlink(alignfile)
+    Lresid = readLines(residfile)
+    unlink(residfile)
     if (get.pepit("POSE")) {
       rm = setdiff(pepnumbers, D$index)
       rmfiles = paste(prefix, "-", rm , ".pdb", sep="")
@@ -225,6 +229,7 @@ if (0) { # p_value needs a larger number of scores of negative bs
       
       for (k in 1:length(o)) {
         cat(">", k, "\n", file=residfile, append=TRUE)
+        cat(Lresid[k],"\n", file=residfile, append=TRUE)
       }
     }
   }

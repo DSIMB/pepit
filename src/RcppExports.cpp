@@ -51,20 +51,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// vertex2
-IntegerMatrix vertex2(CharacterVector XProp, IntegerMatrix XHSE, CharacterVector YProp, IntegerMatrix YHSE);
-RcppExport SEXP _pepit_vertex2(SEXP XPropSEXP, SEXP XHSESEXP, SEXP YPropSEXP, SEXP YHSESEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type XProp(XPropSEXP);
-    Rcpp::traits::input_parameter< IntegerMatrix >::type XHSE(XHSESEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type YProp(YPropSEXP);
-    Rcpp::traits::input_parameter< IntegerMatrix >::type YHSE(YHSESEXP);
-    rcpp_result_gen = Rcpp::wrap(vertex2(XProp, XHSE, YProp, YHSE));
-    return rcpp_result_gen;
-END_RCPP
-}
 // vertex_ho
 IntegerMatrix vertex_ho(StringVector XProp, StringVector XResname, StringVector YProp, StringVector YResname);
 RcppExport SEXP _pepit_vertex_ho(SEXP XPropSEXP, SEXP XResnameSEXP, SEXP YPropSEXP, SEXP YResnameSEXP) {
@@ -188,7 +174,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pepit_distloc", (DL_FUNC) &_pepit_distloc, 3},
     {"_pepit_gaploc", (DL_FUNC) &_pepit_gaploc, 3},
     {"_pepit_vertex", (DL_FUNC) &_pepit_vertex, 5},
-    {"_pepit_vertex2", (DL_FUNC) &_pepit_vertex2, 4},
     {"_pepit_vertex_ho", (DL_FUNC) &_pepit_vertex_ho, 4},
     {"_pepit_vertex_ho2", (DL_FUNC) &_pepit_vertex_ho2, 4},
     {"_pepit_buildGraph", (DL_FUNC) &_pepit_buildGraph, 6},

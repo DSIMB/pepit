@@ -161,7 +161,9 @@ build_graph = function(types, X, XProp, Y, YProp, mindist, maxdist, deltadist, v
   }
   V=vertex(XProp[I,,drop=FALSE], YProp[J,,drop=FALSE], length(I)*length(J), mode=get.pepit("MODE"), hse=get.pepit("HSE"))
   if (verbose) cat("vertices:",length(I), length(J),length(V)/2,"\n")
-  if (all(V==0) | length(V)<=1) return(NULL)
+  if (all(V==0) | length(V)<=1)  {
+    return(igraph::make_empty_graph())
+  }
   V=cbind(J[V[,1]],I[V[,2]]) # atom ids 1..M, 1..N
   #nV=nrow(V)
   E=buildGraph(X, Y, V, as.double(deltadist), as.double(mindist), as.double(maxdist))

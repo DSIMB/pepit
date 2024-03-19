@@ -83,36 +83,6 @@ IntegerMatrix vertex(DataFrame XProp,  DataFrame YProp, int mode, int size, int 
 }
 
 
-//' Constructs vertices of correspondence graph
-//'
-//' @param XProp size N vector of atom types
-//' @param YProp size M vector of atom types
-//' @param V output matrix Nvx2 of vertices
-//' @export
-// [[Rcpp::export]]
-IntegerMatrix vertex2(CharacterVector XProp, IntegerMatrix XHSE, CharacterVector YProp, IntegerMatrix YHSE) {
-  int i,ip,v=0;
-  int N=XProp.size();
-  int M=YProp.size();
-  IntegerMatrix V(N*M,2);
-  for(i=0; i<M; i++) {
-    for (ip=0; ip<N; ip++) {
-      if (strcmp(XProp(ip),YProp(i))==0) {
-        if ((XHSE(ip,0)<=10 && YHSE(i,0)<=10) || (XHSE(ip,1)<=10 && YHSE(i,0)<=10)) {
-          V(v,0)=i+1;
-          V(v,1)=ip+1;
-          v++;
-        }
-      }
-    }
-  }
-  if (v<=1) {
-    fprintf(stderr,"no product graph...\n");
-    return V(Range(0,0),_);
-  }
-  fprintf(stdout, "---> vertices of correspondence graph = mapping edges: %d\n", V.nrow());
-  return V(Range(0,v-1),_);
-}
 
 //' Constructs vertices of correspondence graph
 //'

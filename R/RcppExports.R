@@ -24,16 +24,6 @@ vertex <- function(XProp, YProp, mode, size, hse) {
 
 #' Constructs vertices of correspondence graph
 #'
-#' @param XProp size N vector of atom types
-#' @param YProp size M vector of atom types
-#' @param V output matrix Nvx2 of vertices
-#' @export
-vertex2 <- function(XProp, XHSE, YProp, YHSE) {
-    .Call('_pepit_vertex2', PACKAGE = 'pepit', XProp, XHSE, YProp, YHSE)
-}
-
-#' Constructs vertices of correspondence graph
-#'
 #' @param XProp size N vector of atom types 
 #' @param XResname size N vector of residue names 
 #' @param YProp size M vector of atom types 
