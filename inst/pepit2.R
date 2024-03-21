@@ -183,11 +183,6 @@ if (nrow(D) == 0) {
   q()
 }
 
-Lalign = readLines(alignfile)
-unlink(alignfile)
-Lresid = readLines(residfile)
-unlink(residfile)
-
 if (0) { # p_value needs a larger number of scores of negative bs 
   value = D$alen/D$precision
   o = order(value, decreasing=TRUE)
@@ -201,45 +196,42 @@ if (0) { # p_value needs a larger number of scores of negative bs
 # sorts output of pose files
 #
   noclash = D$clashes<=get.pepit("MAXCLASHES")
-  pepnumbers = as.integer(D$index)
   D = D[noclash,]
   o = order(D$score, decreasing=TRUE)# 
   D = D[o, ]
   nbhits = min(get.pepit("NBHITS"), nrow(D))
 
-  if (nbhits > 0) {
-    if (get.pepit("POSE")) {
-      rm = setdiff(pepnumbers, D$index)
-      rmfiles = paste(prefix, "-", rm , ".pdb", sep="")
-      unlink(rmfiles)
-      liste=NULL
-      for (k in 1:nrow(D)) {
-        pepfile = paste(prefix, "-", D[k,"index"], ".pdb", sep="")
-        if (!file.exists(pepfile)) next
-        newfile = paste(prefix, "_peptide","-", k, ".pdb", sep="")
-        liste = rbind(liste, c(pepfile, newfile))
-        command = paste("mv ", pepfile, " ", newfile, sep="")
-        cat(command,"\n")
-        system(command)
-      }
-    }
+if (nbhits > 0) {
+  D = D[1:nbhits,]
   
-    D[,1] = 1:nrow(D)
-    write.table(D, quote=FALSE, row=FALSE, file=scorefile)
-    
-    ind = grep(">",Lalign)
-    ind = ind[noclash]
-    if (length(ind)>0) {
-      ind = ind[o]
-      ind = ind[1:nbhits]
-      for (i in ind) {
-        cat(Lalign[i], "\n", file=alignfile, append=TRUE)
-        cat(Lalign[(i+1):(i+2)], sep="\n", file=alignfile, append=TRUE)
-      }  
-      
-      for (k in 1:length(o)) {
-        cat(">", k, "\n", file=residfile, append=TRUE)
-        cat(Lresid[k],"\n", file=residfile, append=TRUE)
-      }
+  Lresid = readLines(residfile)
+  unlink(residfile)
+  for (k in 1:nbhits) {
+    i = D$index[k]
+    cat(">", k, as.character(D[k,-1]), "\n", file=residfile, append=TRUE)
+    cat(sort(Lresid[i]),"\n", file=residfile, append=TRUE)
+  }
+
+  Lalign = readLines(alignfile)
+  unlink(alignfile)
+  for (k in 1:nbhits) {
+    i = D$index[k]-1
+    cat(">", k,  as.character(D[k,-1]), "\n", file=alignfile, append=TRUE)
+    cat(Lalign[(3*i+2):(3*i+3)], sep="\n", file=alignfile, append=TRUE)
+  }
+
+  if (get.pepit("POSE")) {
+    for (k in 1:nbhits) {
+      pepfile = paste(prefix, "-", D[k,"index"], ".pdb", sep="")
+      if (!file.exists(pepfile)) next
+      newfile = paste(prefix, "_peptide","-", k, ".pdb", sep="")
+      command = paste("mv ", pepfile, " ", newfile, sep="")
+      cat(command,"\n")
+      system(command)
     }
   }
+
+  D[,1] = 1:nrow(D)
+  write.table(D, quote=FALSE, row=FALSE, file=scorefile)
+    
+}
