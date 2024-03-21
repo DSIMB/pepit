@@ -17,12 +17,12 @@ library(bio3d)
 # user defined parameters
 #
 set.pepit("RESIDUES","")
-set.pepit("PRECISION", 1.0)
+set.pepit("PRECISION", 1.5)
 set.pepit("ADD","calpha")
 set.pepit("MINCLIQUE",6)
 set.pepit("MINSCORE", 0) # tous les scores
 set.pepit("MAXCLASHES", 10) # clashes allowed
-set.pepit("NBCLIQUES", 5)
+set.pepit("NBCLIQUES", 1)
 set.pepit("NBHITS", 100)
 set.pepit("POSE", TRUE)
 set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # all atoms
@@ -117,7 +117,8 @@ for (bsfile in bslist) {
     #cat(count, bsfile, tfile, deltadist, nrow(Y), 0, 100, 0, maxdist+1, 0, 0, "\n", file=allscorefile, append=TRUE)
     next
   }
-  clusters = extend_cliques(X, XProp, Y, YProp, result, deltadist=deltadist)
+  #clusters = result
+  clusters = extend_cliques(X, XProp, Y, YProp, result, deltadist=get.pepit("PRECISION"))
   clusters = remove_redundant_clusters (clusters)
   
   scores = score_clusters(clusters, X, Y, deltadist=deltadist)
@@ -173,7 +174,6 @@ for (bsfile in bslist) {
         }
   }
 }
-
 #
 # sort results for best scores and or p-value (scores here)
 #
@@ -195,11 +195,11 @@ if (0) { # p_value needs a larger number of scores of negative bs
 #
 # sorts output of pose files
 #
-  noclash = D$clashes<=get.pepit("MAXCLASHES")
-  D = D[noclash,]
-  o = order(D$score, decreasing=TRUE)# 
-  D = D[o, ]
-  nbhits = min(get.pepit("NBHITS"), nrow(D))
+noclash = D$clashes<=get.pepit("MAXCLASHES")
+D = D[noclash,]
+o = order(D$alen, decreasing=TRUE)# 
+D = D[o, ]
+nbhits = min(get.pepit("NBHITS"), nrow(D))
 
 if (nbhits > 0) {
   D = D[1:nbhits,]
@@ -211,7 +211,7 @@ if (nbhits > 0) {
     cat(">", k, as.character(D[k,-1]), "\n", file=residfile, append=TRUE)
     cat(sort(Lresid[i]),"\n", file=residfile, append=TRUE)
   }
-
+  
   Lalign = readLines(alignfile)
   unlink(alignfile)
   for (k in 1:nbhits) {
@@ -219,7 +219,7 @@ if (nbhits > 0) {
     cat(">", k,  as.character(D[k,-1]), "\n", file=alignfile, append=TRUE)
     cat(Lalign[(3*i+2):(3*i+3)], sep="\n", file=alignfile, append=TRUE)
   }
-
+  
   if (get.pepit("POSE")) {
     for (k in 1:nbhits) {
       pepfile = paste(prefix, "-", D[k,"index"], ".pdb", sep="")
@@ -229,9 +229,11 @@ if (nbhits > 0) {
       cat(command,"\n")
       system(command)
     }
+    unlink(paste(prefix,"-*.pdb"))
   }
-
+  
   D[,1] = 1:nrow(D)
   write.table(D, quote=FALSE, row=FALSE, file=scorefile)
-    
+  
 }
+
