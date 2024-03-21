@@ -152,7 +152,7 @@ for (bsfile in bslist) {
           ins = target.data$insert[I]
           ins[is.na(ins)] = ""
           bsres = unique(paste(resno, ins, sep=""))
-          cat(bsres, "\n", file=residfile, append=TRUE)
+          cat(sort(bsres), "\n", file=residfile, append=TRUE)
           nbclashes = 0
           if (get.pepit("POSE")) {
              pos = min(gregexpr(":", bsfile)[[1]])
