@@ -17,8 +17,6 @@ No R programming is required.
 
 ## Installation
 
-Install freesasa from github repository https://github.com/mittinatten/freesasa
-
 The pepit package is installed on github repository https://github.com/DSIMB/pepit.
 
 Invoke R and type:

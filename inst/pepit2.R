@@ -17,7 +17,7 @@ library(bio3d)
 # user defined parameters
 #
 set.pepit("RESIDUES","")
-set.pepit("PRECISION", 1.5)
+set.pepit("PRECISION", 1)
 set.pepit("ADD","calpha")
 set.pepit("MINCLIQUE",6)
 set.pepit("MINSCORE", 0) # tous les scores
@@ -29,7 +29,7 @@ set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # all atoms
 #set.pepit("TYPES", c("A","C","O","N")) # backbone atoms
 set.pepit("PVALUE", TRUE)
 set.pepit("MODE",1)
-set.pepit("HSE", 10)
+set.pepit("HSE", 100)
 #
 criteria = "score"
 #
@@ -157,17 +157,20 @@ for (bsfile in bslist) {
           if (get.pepit("POSE")) {
              pos = min(gregexpr(":", bsfile)[[1]])
              pepchain = substring(bsfile, pos+1, pos+1)
-             bsid = substring(basename(bsfile),1,4)
-             pepfile = paste(dirname(bsfile), "/",bsid, pepchain, ".pdb", sep="")
+             #bsid = substring(basename(bsfile),1,4)
+             bsid = tools::file_path_sans_ext(bsfile)
+             pepfile = paste(bsid, pepchain, ".pdb", sep="")
              cat("pepfile=", pepfile, "\n")
-             peptide = bio3d::read.pdb(pepfile)
+             if (file.exists(pepfile)) {
+                peptide = bio3d::read.pdb(pepfile)
              # output binding site posed on target in a .pdb file 
-             ligand.moved = superpose_sites2(clusters[[i]], bs.data, target.data, peptide)
-             nbclashes = clashes(ligand.moved, pdb)
-             cat("nbclashes=", nbclashes,"\n")
-             if (nbclashes <= get.pepit("MAXCLASHES")) {
-              	pepfile = paste(prefix, "-", count, ".pdb",sep="")
-              	write.pdb(pdb=ligand.moved, file = pepfile)
+                ligand.moved = superpose_sites2(clusters[[i]], bs.data, target.data, peptide)
+                nbclashes = clashes(ligand.moved, pdb)
+                cat("nbclashes=", nbclashes,"\n")
+                if (nbclashes <= get.pepit("MAXCLASHES")) {
+              	  pepfile = paste(prefix, "-", count, ".pdb",sep="")
+              	  write.pdb(pdb=ligand.moved, file = pepfile)
+                }
              }
           }
           cat(count, bsfile, tfile, deltadist, scores$len[i], scores$alen[i], scores$rmsd[i], scores$coverage[i], scores$distorsion[i], scores$score[i], nbclashes, "\n", file=allscorefile, append=TRUE)
