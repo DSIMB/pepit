@@ -156,8 +156,8 @@ for (bsfile in bslist) {
           nbclashes = 0
           if (get.pepit("POSE")) {
              bsid = tools::file_path_sans_ext(bsfile)
-             ligfile = paste(bsid, "-sugar", ".pdb", sep="")
-             cat("ligfile=", pepfile, "\n")
+             ligfile = paste(bsid, ".pdb", sep="")
+             cat("ligfile=", ligfile, "\n")
              if (file.exists(ligfile)) {
                 ligand = bio3d::read.pdb(ligfile)
              # output binding site posed on target in a .pdb file 
@@ -200,7 +200,7 @@ D = D[noclash,]
 o = order(D$alen, decreasing=TRUE)# 
 D = D[o, ]
 nbhits = min(get.pepit("NBHITS"), nrow(D))
-
+cat("nbhits=", nbhits, "\n")
 if (nbhits > 0) {
   D = D[1:nbhits,]
   

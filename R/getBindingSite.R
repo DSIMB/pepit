@@ -128,24 +128,16 @@ get_atoms=function(pdb, resno, chain, add="calpha") {
 
 #' create pdb file with binding site atoms marked with b field>0 + ligand
 #'
-#' @param pdb  pdb file as read by bio3d
-#' @param target_chains  vector of selected chains as target
-#' @param ligand_chains  vector of selected chains as ligand
+#' @param target pdb structure as read by bio3d
+#' @param ligand pdb structure as read by bio3d
 #' @param cutoff distance cutoff for defining contact atoms
 #' @param add type of atoms to be added to the binding sites
 #'
 #' @import bio3d
-#' @return pdb bio3d structure
+#' @return inds selected indices from target 
 #' @export
 
-get_binding_sites_2 = function(pdb, target_chains, ligand_chains, cutoff=get.pepit("CONTACT"), add=get.pepit("ADD")) {
-    chains=unique(pdb$atom$chain)
-    target_chains=intersect(target_chains, chains)
-    ligand_chains=intersect(ligand_chains, setdiff(chains, target_chains))
-    if (length(target_chains)==0 | length(ligand_chains)==0) {
-      return(NULL)
-    }
-
+get_binding_sites_2 = function(target, ligand, cutoff=get.pepit("CONTACT"), add=get.pepit("ADD")) {
     add_values=c("", "calpha", "cbeta", "cab")
     add=intersect(add, add_values)
     if (length(add)==0) {
@@ -153,10 +145,7 @@ get_binding_sites_2 = function(pdb, target_chains, ligand_chains, cutoff=get.pep
       return(NULL)
     }
 
-    pdb$atom[,"o"]=0 # test
-    ligand.sel = bio3d::atom.select(pdb, chain=ligand_chains)
-    target.sel = bio3d::atom.select(pdb, chain=target_chains)
-    selbs=bio3d::binding.site(pdb, a.inds=target.sel, b.inds=ligand.sel, cutoff=cutoff, byres=FALSE)
+    selbs=bio3d::binding.site(target, ligand, cutoff=cutoff, byres=FALSE)
 
     if (length(selbs$inds$atom)==0) {
       message("no binding sites")
@@ -167,13 +156,12 @@ get_binding_sites_2 = function(pdb, target_chains, ligand_chains, cutoff=get.pep
 
     # add calpha atoms of selected atoms
     if (length(add)>0) {
-      ind=get_atoms(pdb, selbs$resno, selbs$chain, add)
+      ind=get_atoms(target, selbs$resno, selbs$chain, add)
       ind=c(ind,inds$atom)
       ind=unique(ind)
       inds=as.select(ind)
     }
     
-    pdb$atom[inds$atom,"o"]=1 #test
     inds
 }
 

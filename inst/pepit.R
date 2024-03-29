@@ -29,7 +29,7 @@ set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # all atoms
 #set.pepit("TYPES", c("A","C","O","N")) # backbone atoms
 set.pepit("PVALUE", TRUE)
 set.pepit("MODE",1)
-set.pepit("HSE", 100)
+set.pepit("HSE", 10)
 #
 criteria = "score"
 #
@@ -53,9 +53,47 @@ allscorefile = paste(prefix, "all.score", sep="")
 scorefile = paste(prefix, ".score", sep="")
 alignfile = paste(prefix, ".al", sep="")
 residfile = paste(prefix, ".resi", sep="")
-pdb = read.pdb(tfile)
-pdb = bio3d::trim.pdb(pdb, string="protein")
-pdb = bio3d::trim.pdb(pdb, string="noh")
+
+if (tools::file_ext(tfile)=="" | tools::file_ext(tfile)==".pdb" | tools::file_ext(tfile)==".cif") {
+  #pdb = read.pdb(tfile)
+  pdb = NULL
+  pdb = read.pdb(tfile)
+  if (is.null(pdb)) pdb = read.cif(tfile)
+  if (is.null(pdb)) {
+    message("target file not found")
+    q()
+  }
+  pdb = bio3d::trim.pdb(pdb, string="protein")
+  pdb = bio3d::trim.pdb(pdb, string="noh")
+
+  chainlist = unique(pdb$atom$chain)
+  tchain = unlist(strsplit(tchain,split=""))
+  if (tchain[1]=="*") tchain = chainlist
+  tchain = intersect(tchain, chainlist)
+
+  pdb = bio3d::trim.pdb(pdb,chain=tchain)
+  if(nrow(pdb$atom)==0) {
+    message("wrong target chain(s)")
+    q()
+  }
+
+  cat("encode target...\n")
+  target.data = encode(pdb)
+}
+
+if (tools::file_ext(tfile)==".dat") {
+  target.data = read.table(tfile, header=TRUE)
+  chainlist = unique(target.data$chain)
+  tchain = unlist(strsplit(tchain,split=""))
+  if (tchain[1]=="*") tchain = chainlist
+  tchain = intersect(tchain, chainlist)
+  
+  target.data = target.data[target.data$chain %in% tchain,]
+  if(nrow(target.dat)==0) {
+    message("wrong target chain(s)")
+    q()
+  }
+}
 
 ###
 unlink(scorefile)
@@ -67,16 +105,7 @@ resi=unlist(strsplit(resi,split=","))
 resi=as.integer(resi)
 ###
 
-chainlist = unique(pdb$atom$chain)
-tchain = unlist(strsplit(tchain,split=""))
-if (tchain[1]=="*") tchain = chainlist
-tchain = intersect(tchain, chainlist)
 
-pdb = bio3d::trim.pdb(pdb,chain=tchain)
-if(nrow(pdb$atom)==0) {
-  message("unknown target")
-  q()
-}
 
 if (file.exists(bank) & dir.exists(bank)) { # if bank is directory of bs files
   bslist = dir(bank, pattern=".dat")
@@ -88,9 +117,6 @@ if (file.exists(bank) & dir.exists(bank)) { # if bank is directory of bs files
   q()
 }
 
-cat("encode target...\n")
-target.data = encode(pdb)
-#data.frame(eleno, elety, resid, chain, resno, insert, x, y, z, pc, hseu, hsed)
 
 if (length(resi)>0) target.data = target.data[target.data$resid%in%resi,]
 
@@ -159,7 +185,7 @@ for (bsfile in bslist) {
              pepchain = substring(bsfile, pos+1, pos+1)
              #bsid = substring(basename(bsfile),1,4)
              bsid = tools::file_path_sans_ext(bsfile)
-             pepfile = paste(bsid, pepchain, ".pdb", sep="")
+             pepfile = paste(bsid, ".pdb", sep="")
              cat("pepfile=", pepfile, "\n")
              if (file.exists(pepfile)) {
                 peptide = bio3d::read.pdb(pepfile)

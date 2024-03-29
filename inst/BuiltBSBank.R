@@ -25,11 +25,15 @@ library(pepit)
 #
 # user defined parameters
 #
-set.pepit("CONTACT", 8.0)
+set.pepit("PROTEIN", TRUE)
+set.pepit("CONTACT", 5.0)
 set.pepit("ADD", "calpha")
 set.pepit("HSECUTOFF", 13)
 
 D=read.table(infile, header=TRUE)
+
+resid.mode = FALSE
+if (ncol(D) == 4) resid.mode = TRUE
 
 for (i in 1:nrow(D)) {
   id=as.character(D[i,1])
@@ -39,28 +43,39 @@ for (i in 1:nrow(D)) {
   lchain=substring(lchain,1,1) #only one ligand chain
   outfile=paste(BSBANK,"/",id,tchain,":",lchain,".dat",sep="")
 
-  chainlist=unique(pdb$atom$chain)
-  tchain=unlist(strsplit(tchain,split=""))
-  tchain=intersect(tchain, chainlist)
-  tchain=setdiff(tchain, lchain)
-
-  pdb=bio3d::trim.pdb(pdb, string="protein")
+  #pdb=bio3d::trim.pdb(pdb, string="protein")
   pdb=bio3d::trim.pdb(pdb, string="noh")
+  chains=unique(pdb$atom$chain)
+  tchain=intersect(tchain, chains)
+  if (length(tchain)==0) {
+    next
+  }
   
-  inds = get_binding_sites_2(pdb, target_chains=tchain, ligand_chains=lchain, add=get.pepit("ADD"))
+  #inds = get_binding_sites_2(pdb, target_chains=tchain, ligand_chains=lchain, add=get.pepit("ADD"))
+  target.pdb = bio3d::trim.pdb(pdb, chain=tchain, string="protein")
+  res = NULL
+  if (resid.mode) {
+    res = as.integer(unlist(strsplit(D[i,4], split=",")))
+    outfile=paste(BSBANK,"/",id,tchain,":",lchain, res[1],".dat",sep="")
+  }
+  if (get.pepit("PROTEIN")) {
+    ligand.pdb = bio3d::trim.pdb(pdb, chain=lchain, resno=res, string="protein")
+  } else {
+    ligand.pdb = bio3d::trim.pdb(pdb, chain=lchain, resno=res)
+  }
+  
+  inds = get_binding_sites_2(target.pdb, ligand.pdb, add=get.pepit("ADD"))
   
   for (ch in tchain) {
-    target.pdb=bio3d::trim.pdb(pdb, chain=ch)
-    target.data = encode(target.pdb)
+    pdb=bio3d::trim.pdb(target.pdb, chain=ch)
+    target.data = encode(pdb)
     eleno = pdb$atom$eleno[inds$atom]
     target.data = target.data[target.data$eleno%in%eleno,]
-    cat("outfile=", outfile, file.exists(outfile),"\n")
     col = ifelse(file.exists(outfile), FALSE, TRUE)
     write.table(target.data, quote=FALSE, col.names = col, row.names=FALSE, file=outfile, append=TRUE) #
   }
   id = substring(id,1,4)
-  ligand.pdb = bio3d::trim.pdb(pdb, chain=lchain)
-  outfile=paste(BSBANK,"/",id,lchain,".pdb",sep="")
+  outfile=paste(tools::file_path_sans_ext(outfile),".pdb",sep="")
   bio3d::write.pdb(ligand.pdb, file=outfile)
 }
 
