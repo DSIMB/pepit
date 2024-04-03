@@ -161,48 +161,6 @@ extend_cliques=function(X, XProp, Y, YProp, cliques, deltadist, score_function=g
   }
   return(clusters)
 }
-#' extends cliques for hot spots application
-#'
-#' @param X atom coordinate matrix from target (Nx3)
-#' @param XProp atom label vector from target (N)
-#' @param XResname residue name vector from target (N)
-#' @param XResno residue number vector from target (N)
-#' @param Y atom coordinate matrix from query (a binding site) (Mx3)
-#' @param YProp atom label vector from query  (M)
-#' @param YResname residue name vector from query (N)
-#' @param YResno residue number vector from query (N)
-#' @param cliques list of mappings that are lists of corresponding edge indices 
-#' @param deltadist precision parameter
-#' @import bio3d
-#' @import igraph
-#' @import Rcpp
-#' @return list of clusters : a cluster is a list of X indices (cluster$I) and of Y indices (cluster$J)
-#' @export
-#'
-#' @examples
-extend_cliques_ho=function(X, XProp, XResname, XResno, Y, YProp, YResname, YResno, cliques, deltadist, score_function=get.pepit("SCORE"), verbose=FALSE) {
-  N=nrow(X)
-  nbclique=length(cliques)
-  clusters=list()
-  V=vertex_ho(XProp, XResname, YProp, YResname)
-  for (ic in 1:nbclique) {
-    cat("enlarging clique ", ic, "\n")
-    C=cliques[[ic]]
-    nbefore= length(C)
-    #
-    # calcul de K=ensemble de links à tester pour enrichir clique choisie
-    # 1. ensemble des voisins de C
-    #
-    K=selectLinks(C, V, X, XResno, Y, YResno, deltadist, get.pepit("NBNEI"), get.pepit("AAGAP"))
-    K=union(K,C)
-    #K=(V[,1]-1)*N+V[,2]
-    result=max_bipartite(C, K, X, Y, thresh=deltadist, verbose, score_function)
-    #result=max_bipartite_simple_greedy(C, K, X, Y, deltadist, verbose=FALSE, score_function)
-    clusters[[ic]]=result$C
-    #clen[ic]=length(C)
-  }
-  return(clusters)
-}
 
 #
 # remove redundant clusters
