@@ -180,7 +180,10 @@ for (bsfile in bslist) {
           ins[is.na(ins)] = ""
           chain = target.data$chain[I]
           bsres = paste(resno, ins, chain, sep="")
-          bsres = sort(bsres)
+          bsres = order(bsres)
+          bsres = bsres[o]
+          resno = resno[o]
+          chain = chain[o]
           keep = !duplicated(bsres)
           nb = as.integer(table(bsres))
           res.data = data.frame(bs = bsfile, res = bsres[keep], chain = chain[keep], score = nb)
