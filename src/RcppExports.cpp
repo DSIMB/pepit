@@ -65,20 +65,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// vertex_ho2
-IntegerMatrix vertex_ho2(IntegerVector XResno, StringVector XResname, IntegerVector YResno, StringVector YResname);
-RcppExport SEXP _pepit_vertex_ho2(SEXP XResnoSEXP, SEXP XResnameSEXP, SEXP YResnoSEXP, SEXP YResnameSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type XResno(XResnoSEXP);
-    Rcpp::traits::input_parameter< StringVector >::type XResname(XResnameSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type YResno(YResnoSEXP);
-    Rcpp::traits::input_parameter< StringVector >::type YResname(YResnameSEXP);
-    rcpp_result_gen = Rcpp::wrap(vertex_ho2(XResno, XResname, YResno, YResname));
-    return rcpp_result_gen;
-END_RCPP
-}
 // buildGraph
 IntegerMatrix buildGraph(NumericMatrix X, NumericMatrix Y, IntegerMatrix V, double deltadist, double mindist, double maxdist);
 RcppExport SEXP _pepit_buildGraph(SEXP XSEXP, SEXP YSEXP, SEXP VSEXP, SEXP deltadistSEXP, SEXP mindistSEXP, SEXP maxdistSEXP) {
@@ -111,25 +97,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type maxdist(maxdistSEXP);
     Rcpp::traits::input_parameter< int >::type maxgap(maxgapSEXP);
     rcpp_result_gen = Rcpp::wrap(buildGraph_ho(X, XResno, Y, YResno, V, deltadist, mindist, maxdist, maxgap));
-    return rcpp_result_gen;
-END_RCPP
-}
-// buildGraph_ho2
-IntegerMatrix buildGraph_ho2(NumericMatrix X, IntegerVector XResno, IntegerVector XResInd, NumericMatrix Y, IntegerVector YResno, IntegerVector YResInd, IntegerMatrix V, double deltadist, int maxgap);
-RcppExport SEXP _pepit_buildGraph_ho2(SEXP XSEXP, SEXP XResnoSEXP, SEXP XResIndSEXP, SEXP YSEXP, SEXP YResnoSEXP, SEXP YResIndSEXP, SEXP VSEXP, SEXP deltadistSEXP, SEXP maxgapSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type XResno(XResnoSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type XResInd(XResIndSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type YResno(YResnoSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type YResInd(YResIndSEXP);
-    Rcpp::traits::input_parameter< IntegerMatrix >::type V(VSEXP);
-    Rcpp::traits::input_parameter< double >::type deltadist(deltadistSEXP);
-    Rcpp::traits::input_parameter< int >::type maxgap(maxgapSEXP);
-    rcpp_result_gen = Rcpp::wrap(buildGraph_ho2(X, XResno, XResInd, Y, YResno, YResInd, V, deltadist, maxgap));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -175,10 +142,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pepit_gaploc", (DL_FUNC) &_pepit_gaploc, 3},
     {"_pepit_vertex", (DL_FUNC) &_pepit_vertex, 5},
     {"_pepit_vertex_ho", (DL_FUNC) &_pepit_vertex_ho, 4},
-    {"_pepit_vertex_ho2", (DL_FUNC) &_pepit_vertex_ho2, 4},
     {"_pepit_buildGraph", (DL_FUNC) &_pepit_buildGraph, 6},
     {"_pepit_buildGraph_ho", (DL_FUNC) &_pepit_buildGraph_ho, 9},
-    {"_pepit_buildGraph_ho2", (DL_FUNC) &_pepit_buildGraph_ho2, 9},
     {"_pepit_mapping_dist_sum2", (DL_FUNC) &_pepit_mapping_dist_sum2, 7},
     {"_pepit_selectLinks", (DL_FUNC) &_pepit_selectLinks, 9},
     {NULL, NULL, 0}

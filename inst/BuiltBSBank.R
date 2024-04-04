@@ -51,7 +51,6 @@ for (i in 1:nrow(D)) {
     next
   }
   
-  #inds = get_binding_sites_2(pdb, target_chains=tchain, ligand_chains=lchain, add=get.pepit("ADD"))
   target.pdb = bio3d::trim.pdb(pdb, chain=tchain, string="protein")
   res = NULL
   if (resid.mode) {
@@ -64,7 +63,7 @@ for (i in 1:nrow(D)) {
     ligand.pdb = bio3d::trim.pdb(pdb, chain=lchain, resno=res)
   }
   
-  inds = get_binding_sites_2(target.pdb, ligand.pdb, add=get.pepit("ADD"))
+  inds = get_binding_sites(target.pdb, ligand.pdb, add=get.pepit("ADD"))
   
   for (ch in tchain) {
     pdb=bio3d::trim.pdb(target.pdb, chain=ch)

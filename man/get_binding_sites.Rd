@@ -5,33 +5,23 @@
 \title{create pdb file with binding site atoms marked with b field>0 + ligand}
 \usage{
 get_binding_sites(
-  pdb,
-  target_chains,
-  ligand_chains,
+  target,
+  ligand,
   cutoff = get.pepit("CONTACT"),
-  add = get.pepit("ADD"),
-  add.ligand = TRUE,
-  access = -1,
-  pepchain = NULL
+  add = get.pepit("ADD")
 )
 }
 \arguments{
-\item{pdb}{pdb file as read by bio3d}
+\item{target}{pdb structure as read by bio3d}
 
-\item{target_chains}{vector of selected chains as target}
-
-\item{ligand_chains}{vector of selected chains as ligand}
+\item{ligand}{pdb structure as read by bio3d}
 
 \item{cutoff}{distance cutoff for defining contact atoms}
 
-\item{add}{type of carbon atoms to be added to the binding sites}
-
-\item{add.ligand}{add ligand to the output pdb}
-
-\item{access}{if >0 keep only surface atoms on returned pdb}
+\item{add}{type of atoms to be added to the binding sites}
 }
 \value{
-pdb bio3d structure
+inds selected indices from target
 }
 \description{
 create pdb file with binding site atoms marked with b field>0 + ligand

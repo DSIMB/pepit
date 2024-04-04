@@ -34,18 +34,6 @@ vertex_ho <- function(XProp, XResname, YProp, YResname) {
     .Call('_pepit_vertex_ho', PACKAGE = 'pepit', XProp, XResname, YProp, YResname)
 }
 
-#' Constructs vertices of correspondence graph based on residues
-#'
-#' @param XResno size N vector of residue number
-#' @param XResname size N vector of residue names 
-#' @param YResno size M vector of residue number
-#' @param YResname size M vector of residue names 
-#' @param V output, matrix Nvx2 of vertices
-#' @export
-vertex_ho2 <- function(XResno, XResname, YResno, YResname) {
-    .Call('_pepit_vertex_ho2', PACKAGE = 'pepit', XResno, XResname, YResno, YResname)
-}
-
 #' Constructs correspondence graph
 #'
 #' @param X matrix Nx3
@@ -70,19 +58,6 @@ buildGraph <- function(X, Y, V, deltadist, mindist, maxdist) {
 #' @export
 buildGraph_ho <- function(X, XResno, Y, YResno, V, deltadist, mindist, maxdist, maxgap) {
     .Call('_pepit_buildGraph_ho', PACKAGE = 'pepit', X, XResno, Y, YResno, V, deltadist, mindist, maxdist, maxgap)
-}
-
-#' Constructs correspondence graph
-#'
-#' @param X matrix Nx3
-#' @param Y matrix Nx3
-#' @param V matrix Nvx2
-#' @param deltadist double
-#' @param mindist double
-#' @param maxdist double
-#' @export
-buildGraph_ho2 <- function(X, XResno, XResInd, Y, YResno, YResInd, V, deltadist, maxgap) {
-    .Call('_pepit_buildGraph_ho2', PACKAGE = 'pepit', X, XResno, XResInd, Y, YResno, YResInd, V, deltadist, maxgap)
 }
 
 #' @export

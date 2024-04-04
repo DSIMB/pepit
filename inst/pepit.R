@@ -126,6 +126,7 @@ XProp = target.data
 N = nrow(X)
 
 cat("index bs target precision bslen alen rmsd coverage meandist score clashes\n", file=allscorefile)
+cat("bs residue chain score\n", file=residfile)
 count = 0
 for (bsfile in bslist) {
   cat("bsfile =", bsfile,"\n")
@@ -177,8 +178,13 @@ for (bsfile in bslist) {
           resno = target.data$resno[I]
           ins = target.data$insert[I]
           ins[is.na(ins)] = ""
-          bsres = unique(paste(resno, ins, sep=""))
-          cat(sort(bsres), "\n", file=residfile, append=TRUE)
+          chain = target.data$chain[I]
+          bsres = paste(resno, ins, chain, sep="")
+          bsres = sort(bsres)
+          keep = !duplicated(bsres)
+          nb = as.integer(table(bsres))
+          res.data = data.frame(bs = bsfile, res = bsres[keep], chain = chain[keep], score = nb)
+          write.table(res.data, quote=FALSE, row=FALSE, col = FALSE, file=residfile, append=TRUE)
           nbclashes = 0
           if (get.pepit("POSE")) {
              pos = min(gregexpr(":", bsfile)[[1]])
@@ -190,7 +196,7 @@ for (bsfile in bslist) {
              if (file.exists(pepfile)) {
                 peptide = bio3d::read.pdb(pepfile)
              # output binding site posed on target in a .pdb file 
-                ligand.moved = superpose_sites2(clusters[[i]], bs.data, target.data, peptide)
+                ligand.moved = superpose_sites(clusters[[i]], bs.data, target.data, peptide)
                 nbclashes = clashes(ligand.moved, pdb)
                 cat("nbclashes=", nbclashes,"\n")
                 if (nbclashes <= get.pepit("MAXCLASHES")) {
@@ -233,13 +239,15 @@ nbhits = min(get.pepit("NBHITS"), nrow(D))
 if (nbhits > 0) {
   D = D[1:nbhits,]
   
-  Lresid = readLines(residfile)
-  unlink(residfile)
-  for (k in 1:nbhits) {
-    i = D$index[k]
-    cat(">", k, as.character(D[k,-1]), "\n", file=residfile, append=TRUE)
-    cat(sort(Lresid[i]),"\n", file=residfile, append=TRUE)
-  }
+  Dresid = read.table(residfile, header=TRUE)
+  Dresid = Dresid[Dresid$bs %in% D$bs,]
+  write.table(Dresid, quote=FALSE, row=FALSE, file=residfile)
+  #unlink(residfile)
+  #for (k in 1:nbhits) {
+  #  i = D$index[k]
+  #  cat(">", k, as.character(D[k,-1]), "\n", file=residfile, append=TRUE)
+  #  cat(sort(Lresid[i]),"\n", file=residfile, append=TRUE)
+  #}
   
   Lalign = readLines(alignfile)
   unlink(alignfile)

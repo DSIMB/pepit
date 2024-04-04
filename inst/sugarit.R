@@ -161,7 +161,7 @@ for (bsfile in bslist) {
              if (file.exists(ligfile)) {
                 ligand = bio3d::read.pdb(ligfile)
              # output binding site posed on target in a .pdb file 
-                ligand.moved = superpose_sites2(clusters[[i]], bs.data, target.data, ligand)
+                ligand.moved = superpose_sites(clusters[[i]], bs.data, target.data, ligand)
                 nbclashes = clashes(ligand.moved, pdb)
                 cat("nbclashes=", nbclashes,"\n")
                 if (nbclashes <= get.pepit("MAXCLASHES")) {

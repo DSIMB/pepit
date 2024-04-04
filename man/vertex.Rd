@@ -4,15 +4,19 @@
 \alias{vertex}
 \title{Constructs vertices of correspondence graph}
 \usage{
-vertex(XProp, YProp)
+vertex(XProp, YProp, mode, size, hse)
 }
 \arguments{
-\item{XProp}{size N vector of atom types}
+\item{XProp}{data frame  N nrows}
 
-\item{YProp}{size M vector of atom types}
+\item{YProp}{data frame  M nrows}
+
+\item{mode}{0 atom types comparison, 1 all features' comparison}
+
+\item{size}{estimated initial size of V}
 
 \item{V}{output matrix Nvx2 of vertices}
 }
 \description{
-Constructs vertices of correspondence graph
+data.frame(eleno, elety, resid, chain, resno, insert, x, y, z, pc, hseu, hsed)
 }
