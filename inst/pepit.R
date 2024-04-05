@@ -126,7 +126,7 @@ XProp = target.data
 N = nrow(X)
 
 cat("index bs target precision bslen alen rmsd coverage meandist score clashes\n", file=allscorefile)
-cat("bs residue chain score\n", file=residfile)
+cat("index bs residue chain score\n", file=residfile)
 count = 0
 for (bsfile in bslist) {
   cat("bsfile =", bsfile,"\n")
@@ -180,13 +180,13 @@ for (bsfile in bslist) {
           ins[is.na(ins)] = ""
           chain = target.data$chain[I]
           bsres = paste(resno, ins, chain, sep="")
-          bsres = order(bsres)
+          o = order(bsres)
           bsres = bsres[o]
           resno = resno[o]
           chain = chain[o]
           keep = !duplicated(bsres)
           nb = as.integer(table(bsres))
-          res.data = data.frame(bs = bsfile, res = bsres[keep], chain = chain[keep], score = nb)
+          res.data = data.frame(index=count, bs = bsfile, res = bsres[keep], chain = chain[keep], score = nb)
           write.table(res.data, quote=FALSE, row=FALSE, col = FALSE, file=residfile, append=TRUE)
           nbclashes = 0
           if (get.pepit("POSE")) {
@@ -244,6 +244,12 @@ if (nbhits > 0) {
   
   Dresid = read.table(residfile, header=TRUE)
   Dresid = Dresid[Dresid$bs %in% D$bs,]
+  index = Dresid$index
+  for (k in 1:nrow(D)) {
+    ind = which(index == D$index[k])
+    Dresid$index[ind] = k
+  }
+  #Dresid$index = D$index
   write.table(Dresid, quote=FALSE, row=FALSE, file=residfile)
   #unlink(residfile)
   #for (k in 1:nbhits) {

@@ -220,7 +220,6 @@ NumericVector mapping_dist_sum2(NumericMatrix X, IntegerVector I, IntegerVector 
   n=I.size();
   //printf("mapping_dist_sum %d %d\n", I.size(), CI.size());
   if (thresh<=0.) {
-    printf ("thresh=15\n");
     thresh=15.; //patchsearch_NEIDIST
   }
   NumericVector scores(n);
