@@ -14,7 +14,9 @@
 #' @export
 #'
 #' @examples
-encode = function(pdb, cutoff=get.pepit("HSECUTOFF"),  pc.code=get.pepit("PCCODE") ) {
+encode = function(pdb, cutoff=get.pepit("HSECUTOFF"),  pc.code=get.pepit("PCCODE") , chain=NULL) {
+  
+    if (!is.null(chain)) pdb = bio3d::trim(pdb, chain=chain)
     # HSE
     hse = HSEB(pdb, cutoff=cutoff)
 

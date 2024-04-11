@@ -2,7 +2,7 @@ matching_score=function(C, X, Y,  score_function, thresh=0) {
   N=nrow(X)
   CI=(C-1)%%N+1 # target indices
   CJ=(C-1)%/%N+1# query indices
-  W=score_function(X, CI, CI, Y, CJ, CJ,thresh)
+  W=score_function(X, CI, CI, Y, CJ, CJ, thresh)
   sum(W)
 }
 
@@ -56,7 +56,7 @@ max_bipartite=function(C, K, X, Y, thresh, verbose=FALSE, score_function=get.pep
   C0=C
   stop=FALSE
   niter=0
-  score_init=matching_score(C,X, Y, score_function,thresh)
+  score_init=matching_score(C,X, Y, score_function, thresh)
   if (verbose) cat("C0=",length(C),score_init, score_init/length(C),"\n")
   while(!stop & niter<20) {
     result=max_bipartite_score(Cprev, K, X, Y,  gp, score_function, thresh) #f(C1=result$C,C0=Cprev)

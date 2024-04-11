@@ -221,6 +221,7 @@ NumericVector mapping_dist_sum2(NumericMatrix X, IntegerVector I, IntegerVector 
   //printf("mapping_dist_sum %d %d\n", I.size(), CI.size());
   if (thresh<=0.) {
     thresh=15.; //patchsearch_NEIDIST
+    printf("thresh=%lf\n", thresh);
   }
   NumericVector scores(n);
   for (i=0; i<I.size();i++) {

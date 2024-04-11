@@ -113,36 +113,32 @@ PDB Receptor.Chain Peptide.Chain
 ```
 The R script `BuiltBSBank.R` in `pepit/inst` builds the bank and add binding site pdb files to a directory that already exists.
 
-First create the directory as it is a new bank
+First create the directory
 
 ```bash
 mkdir NanoBank
 ```
 
-and 
+and create the BS files
 ```bash
-Rscript ./BuiltBSBank.R nanobank.dat NanoBank
+Rscript path_to_pepit/inst/BuiltBSBank.R nanobank.dat NanoBank
 ```
-the BS files contains atoms of the receptor close to the peptide  and the complete peptide.
+BS files are row-column file (data frames) containing information on  atoms of the receptor close to its peptide.
+The bank contains also associated peptide pdb files interacting with the binding sites.
 
-Receptor atoms are typed to labeled differently alpha carbons, beta carbons, aromatic carbons, backbone and side chain atoms.
-
-The complete peptide is not typed and is included to be proposed as candidate peptide if the corresponing binding site can be matched to protein target.
-
-Parameters can be changed in the script as followed
+Parameters can be changed in the script `BuiltBSBank.R` as followed
 
 ```bash
 set.pepit("CONTACT", 8.0)
 set.pepit("ADD", "calpha")
 ```
-
-Atoms of receptor at less a 10 A of the peptide are selected.
+These parameter values mean that atoms of receptor at less a 8.0 A of the peptide are selected.
 
 All alpha carbons of the residues for which an atom is selected are added to the binding site
 
 The search is performed by the R script `pepit.R` located in `pepit/inst`
 ```bashBCL-XL 
-Rscript ./pepit.R 2bzw A NanoBank 2bzw
+Rscript path_to_pepit/inst/pepit.R 2bzw A NanoBank 2bzw
 ```
 the first argument is a pdb id, a pdb file or a cif file. If it is an id, the pdb is fetched from the RCSB PDB.
 
@@ -156,33 +152,31 @@ with the default parameters there is only one output file: the score file `2bzw.
 
 
 ```bash
-index bs target precision bslen alen rmsd coverage meandist score
-1 NanoBank/2bzwA:B.pdb 2bzw 1 118 118 0 1 0 13924
-2 NanoBank/3r85D:H.pdb 2bzw 1 115 73 0.966 0.6347826 0.5202486 2556.595
-3 NanoBank/4qveA:B.pdb 2bzw 1 125 68 1.305 0.544 0.5212318 2213.824
-4 NanoBank/1cm1A:B.pdb 2bzw 1 153 24 1.031 0.1568627 0.4726183 303.7718
-5 NanoBank/1cm1A:B.pdb 2bzw 1 153 21 2.372 0.1372549 0.6170174 168.8953
-6 NanoBank/1cm1A:B.pdb 2bzw 1 153 21 1.404 0.1372549 0.6316393 162.4471
-7 NanoBank/1cm1A:B.pdb 2bzw 1 153 19 3.694 0.124183 0.550813 162.1565
-8 NanoBank/1cm1A:B.pdb 2bzw 1 153 19 2.535 0.124183 0.5876434 148.8607
-```
-if the parameter `POSE` is set to TRUE output files `2bzw.al`, `2bzw.index` and `2bzw-peptide-<k>.pdb` are produced
-
-```R
-set.pepit("POSE", TRUE)
+index bs target precision bslen alen rmsd coverage meandist score clashes
+1 NanoBank/2bzwA:B.dat 2bzw 1 188 188 0 1 0 35344 NA
+2 NanoBank/4qveA:B.dat 2bzw 1 166 127 1.123 0.7650602 0.4789747 8403.616 NA
+3 NanoBank/3r85D:H.dat 2bzw 1 141 114 0.925 0.8085106 0.4256236 7464.595 NA
+4 NanoBank/1cm1A:B.dat 2bzw 1 184 31 2.868 0.1684783 0.5969728 387.3091 NA
 ```
 
 `2bzw.al` contains the matching between atoms 
 
-`2bzw.index` contains the index  of the peptide : rank of the peptide and index of the peptide in the score table
+`2bzw.resi` contains the contacting target residue number for each selected peptide found in the BS bank. 
+
+if the parameter `POSE` is set to TRUE output files  `2bzw_peptide-<k>.pdb` are produced
+
+```R
+set.pepit("POSE", TRUE)
+```
 
 `2bzw-peptide-<k>.pdb` contains the peptide alone posed onto the protein target
 
 Results can be visualised with
 
 ```bash
-pymol 2bzw-peptide-* 2bzw.cif
+pymol 2bzw_peptide-* 2bzw.cif
 ```
+![Pymol Results](Pymol.png)
 
 To avoid poses inside the target, the parameter `MAXCLASHES` can be set to a reasonable value
 

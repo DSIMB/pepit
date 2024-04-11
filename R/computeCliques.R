@@ -238,7 +238,7 @@ cliques=function(X, XProp, Y, YProp, deltadist, mindist, maxdist, types, verbose
   clusters=merge_cliques(cliques, N, get.pepit("INTERCLIQUE"))
   nbclique=length(clusters)
   cat("nb. of merged cliques = ", nbclique, "\n")
-  clusters=sort_clusters(clusters, N, X, Y, get.pepit("SCORE"))
+  clusters=sort_clusters(clusters, N, X, Y, get.pepit("SCORE"), thresh=deltadist)
   nbclique=length(clusters)
   if (nbclique==0) {
     message("no valid clique after merging")

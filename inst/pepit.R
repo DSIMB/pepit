@@ -23,8 +23,8 @@ set.pepit("MINCLIQUE",6)
 set.pepit("MINSCORE", 0) # tous les scores
 set.pepit("MAXCLASHES", 10) # clashes allowed
 set.pepit("NBCLIQUES", 1)
-set.pepit("NBHITS", 100)
-set.pepit("POSE", TRUE)
+set.pepit("NBHITS", 20)
+set.pepit("POSE", FALSE)
 set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # all atoms
 #set.pepit("TYPES", c("A","C","O","N")) # backbone atoms
 set.pepit("PVALUE", TRUE)
@@ -188,7 +188,7 @@ for (bsfile in bslist) {
           nb = as.integer(table(bsres))
           res.data = data.frame(index=count, bs = bsfile, res = bsres[keep], chain = chain[keep], score = nb)
           write.table(res.data, quote=FALSE, row=FALSE, col = FALSE, file=residfile, append=TRUE)
-          nbclashes = 0
+          nbclashes = NA
           if (get.pepit("POSE")) {
              pos = min(gregexpr(":", bsfile)[[1]])
              pepchain = substring(bsfile, pos+1, pos+1)
@@ -209,7 +209,7 @@ for (bsfile in bslist) {
              }
           }
           cat(count, bsfile, tfile, deltadist, scores$len[i], scores$alen[i], scores$rmsd[i], scores$coverage[i], scores$distorsion[i], scores$score[i], nbclashes, "\n", file=allscorefile, append=TRUE)
-        }
+      }
   }
 }
 #
@@ -233,12 +233,13 @@ if (0) { # p_value needs a larger number of scores of negative bs
 #
 # sorts output of pose files
 #
-noclash = D$clashes<=get.pepit("MAXCLASHES")
-D = D[noclash,]
+if (get.pepit("POSE")) {
+  noclash = D$clashes<=get.pepit("MAXCLASHES")
+  D = D[noclash,]
+}
 o = order(D$alen, decreasing=TRUE)# 
 D = D[o, ]
 nbhits = min(get.pepit("NBHITS"), nrow(D))
-
 if (nbhits > 0) {
   D = D[1:nbhits,]
   
@@ -277,9 +278,8 @@ if (nbhits > 0) {
     }
     unlink(paste(prefix,"-*.pdb"))
   }
-  
+
   D[,1] = 1:nrow(D)
   write.table(D, quote=FALSE, row=FALSE, file=scorefile)
-  
 }
 
