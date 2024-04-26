@@ -184,3 +184,25 @@ To avoid poses inside the target, the parameter `MAXCLASHES` can be set to a rea
 set.pepit("MAXCLASHES", 10)
 ```
 
+### Sugars 
+if sugars are given as chains, the bank description file is similar as for peptides
+```bash
+echo "id target sugar" > bank.dat
+echo "xxxx A B" >> bank.dat
+```
+in case sugars are given as residues, chain and residue numbers must be given
+```bash
+echo "id target sugar resid" > bank.dat
+echo "3wh7 A A 501,502" >> bank.dat
+```
+
+The script to build the binding site bank is `BuiltBSBank.R`
+```bash
+Rscript ~/pepit/inst/BuiltBSBank.R bank.dat Bank
+```
+
+The script to search for sugars binding site is `sugarit.R`
+
+```bash
+Rscript ~/pepit/inst/sugarit.R 3wh7 A Bank test
+```
