@@ -142,7 +142,7 @@ extend_cliques=function(X, XProp, Y, YProp, cliques, deltadist, score_function=g
   nbclique=length(cliques)
   clusters=list()
 
-  V=vertex(XProp, YProp, mode=get.pepit("MODE"), size=0, hse=100)
+  V=vertex(XProp, YProp, mode=get.pepit("MODE"), size=0, hse=100) # hse=100 => +buried atoms 
   for (ic in 1:nbclique) {
     cat("enlarging clique ", ic, "\n")
     C=cliques[[ic]]

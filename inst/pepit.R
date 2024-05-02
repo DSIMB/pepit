@@ -21,8 +21,8 @@ set.pepit("PRECISION", 1)
 set.pepit("ADD","calpha")
 set.pepit("MINCLIQUE",6)
 set.pepit("MINSCORE", 0) # tous les scores
-set.pepit("MAXCLASHES", 10) # clashes allowed
-set.pepit("NBCLIQUES", 1)
+set.pepit("MAXCLASHES", 100) # clashes allowed
+set.pepit("NBCLIQUES", 5)
 set.pepit("NBHITS", 20)
 set.pepit("POSE", FALSE)
 set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # all atoms

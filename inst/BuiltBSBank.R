@@ -26,7 +26,7 @@ library(pepit)
 # user defined parameters
 #
 set.pepit("PROTEIN", TRUE)
-set.pepit("CONTACT", 5.0)
+set.pepit("CONTACT", 6.0)
 set.pepit("ADD", "calpha")
 set.pepit("HSECUTOFF", 13)
 
