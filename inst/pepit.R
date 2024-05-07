@@ -23,7 +23,7 @@ set.pepit("MINCLIQUE",4)
 set.pepit("MINSCORE", 0) # tous les scores
 set.pepit("MAXCLASHES", 10) # clashes allowed
 set.pepit("NBCLIQUES", 5)
-set.pepit("NBHITS", 20)
+set.pepit("NBHITS", 1)
 set.pepit("POSE", FALSE)
 set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # all atoms
 #set.pepit("TYPES", c("A","C","O","N")) # backbone atoms
