@@ -5,7 +5,7 @@ Version: 1.0
 Date: 2022-12-02
 Author: Frederic Guyon
 Maintainer: Frederic Guyon <frederic.guyon@u-paris.fr>
-Description: Similarties of peptide binding sites and target protein surfaces
+Description: Similarities of peptide binding sites and target protein surfaces
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.9),bio3d,igraph
 LinkingTo: Rcpp

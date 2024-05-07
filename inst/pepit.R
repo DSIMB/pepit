@@ -19,14 +19,15 @@ library(bio3d)
 set.pepit("RESIDUES","")
 set.pepit("PRECISION", 1)
 set.pepit("ADD","calpha")
-set.pepit("MINCLIQUE",6)
+set.pepit("MINCLIQUE",4)
 set.pepit("MINSCORE", 0) # tous les scores
-set.pepit("MAXCLASHES", 100) # clashes allowed
+set.pepit("MAXCLASHES", 10) # clashes allowed
 set.pepit("NBCLIQUES", 5)
 set.pepit("NBHITS", 20)
 set.pepit("POSE", FALSE)
 set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # all atoms
 #set.pepit("TYPES", c("A","C","O","N")) # backbone atoms
+set.pepit("TYPES", c("b")) # backbone atoms
 set.pepit("PVALUE", TRUE)
 set.pepit("MODE",1)
 set.pepit("HSE", 10)
@@ -53,12 +54,13 @@ allscorefile = paste(prefix, "all.score", sep="")
 scorefile = paste(prefix, ".score", sep="")
 alignfile = paste(prefix, ".al", sep="")
 residfile = paste(prefix, ".resi", sep="")
+allresidfile = paste(prefix, "all.resi", sep="")
 
-if (tools::file_ext(tfile)=="" | tools::file_ext(tfile)==".pdb" | tools::file_ext(tfile)==".cif") {
-  #pdb = read.pdb(tfile)
+ext = tools::file_ext(tfile)
+if (ext == "" | ext == "pdb" | ext == "cif") {
   pdb = NULL
-  pdb = read.pdb(tfile)
-  if (is.null(pdb)) pdb = read.cif(tfile)
+  if (ext == "" | ext == "pdb") pdb = read.pdb(tfile)
+  if (ext == "cif") pdb = read.cif(tfile)
   if (is.null(pdb)) {
     message("target file not found")
     q()
@@ -81,7 +83,7 @@ if (tools::file_ext(tfile)=="" | tools::file_ext(tfile)==".pdb" | tools::file_ex
   target.data = encode(pdb)
 }
 
-if (tools::file_ext(tfile)==".dat") {
+if (ext == "dat") {
   target.data = read.table(tfile, header=TRUE)
   chainlist = unique(target.data$chain)
   tchain = unlist(strsplit(tchain,split=""))
@@ -105,8 +107,6 @@ resi=unlist(strsplit(resi,split=","))
 resi=as.integer(resi)
 ###
 
-
-
 if (file.exists(bank) & dir.exists(bank)) { # if bank is directory of bs files
   bslist = dir(bank, pattern=".dat")
   bslist = paste(bank,"/",bslist,sep="")
@@ -126,7 +126,7 @@ XProp = target.data
 N = nrow(X)
 
 cat("index bs target precision bslen alen rmsd coverage meandist score clashes\n", file=allscorefile)
-cat("index bs residue chain score\n", file=residfile)
+cat("index bs residue chain score\n", file=allresidfile)
 count = 0
 for (bsfile in bslist) {
   cat("bsfile =", bsfile,"\n")
@@ -163,7 +163,7 @@ for (bsfile in bslist) {
       if(scores$score[i] >= get.pepit("MINSCORE")) {
           I = (clusters[[i]]-1)%%N+1 # target indices
           J = (clusters[[i]]-1)%/%N+1# bs indices
- 	        count = count + 1
+ 	  count = count + 1
           # patch 
           bs.data$insert[is.na(bs.data$insert)]=""
           target.data$insert[is.na(target.data$insert)]=""
@@ -187,7 +187,7 @@ for (bsfile in bslist) {
           keep = !duplicated(bsres)
           nb = as.integer(table(bsres))
           res.data = data.frame(index=count, bs = bsfile, res = bsres[keep], chain = chain[keep], score = nb)
-          write.table(res.data, quote=FALSE, row=FALSE, col = FALSE, file=residfile, append=TRUE)
+          write.table(res.data, quote=FALSE, row=FALSE, col = FALSE, file=allresidfile, append=TRUE)
           nbclashes = NA
           if (get.pepit("POSE")) {
              pos = min(gregexpr(":", bsfile)[[1]])
@@ -237,27 +237,24 @@ if (get.pepit("POSE")) {
   noclash = D$clashes<=get.pepit("MAXCLASHES")
   D = D[noclash,]
 }
-o = order(D$alen, decreasing=TRUE)# 
+#
+o = order(D$alen, decreasing=TRUE)#
+#
 D = D[o, ]
 nbhits = min(get.pepit("NBHITS"), nrow(D))
 if (nbhits > 0) {
   D = D[1:nbhits,]
+  Dresid = read.table(allresidfile, header=TRUE)
+
+  ind = which(Dresid$index %in% D$index)
+  Dresid = Dresid[ind,]
   
-  Dresid = read.table(residfile, header=TRUE)
-  Dresid = Dresid[Dresid$bs %in% D$bs,]
   index = Dresid$index
   for (k in 1:nrow(D)) {
     ind = which(index == D$index[k])
     Dresid$index[ind] = k
   }
-  #Dresid$index = D$index
   write.table(Dresid, quote=FALSE, row=FALSE, file=residfile)
-  #unlink(residfile)
-  #for (k in 1:nbhits) {
-  #  i = D$index[k]
-  #  cat(">", k, as.character(D[k,-1]), "\n", file=residfile, append=TRUE)
-  #  cat(sort(Lresid[i]),"\n", file=residfile, append=TRUE)
-  #}
   
   Lalign = readLines(alignfile)
   unlink(alignfile)
