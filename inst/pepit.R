@@ -13,24 +13,7 @@
 library(pepit)
 library(bio3d)
 
-#
-# user defined parameters
-#
-set.pepit("RESIDUES","")
-set.pepit("PRECISION", 1)
-set.pepit("ADD","calpha")
-set.pepit("MINCLIQUE",4)
-set.pepit("MINSCORE", 0) # tous les scores
-set.pepit("MAXCLASHES", 10) # clashes allowed
-set.pepit("NBCLIQUES", 5)
-set.pepit("NBHITS", 1)
-set.pepit("POSE", FALSE)
-set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # all atoms
-#set.pepit("TYPES", c("A","C","O","N")) # backbone atoms
-set.pepit("TYPES", c("b")) # backbone atoms
-set.pepit("PVALUE", TRUE)
-set.pepit("MODE",1)
-set.pepit("HSE", 10)
+
 #
 criteria = "score"
 #
@@ -48,6 +31,9 @@ tchain = args[2] # a chain or a chain list A,B,C or * for all chains
 bank = args[3] # a directory with binding sites or a pdb file
 prefix = args[4] # a prefix for generating  output files
 
+read.config("pepit.cfg")
+
+cat("MINSCORE=", get.pepit("MINSCORE"),"\n")
 deltadist = get.pepit("PRECISION")
 maxdist = get.pepit("MAXDELTADIST")
 allscorefile = paste(prefix, "all.score", sep="")
@@ -158,12 +144,14 @@ for (bsfile in bslist) {
   o = o[1:nbcliques]
   scores = lapply(scores, "[", o)
   clusters = clusters[o]
-
+  read.config("pepit.cfg")
+  
   for (i in 1:length(clusters)) {
-      if(scores$score[i] >= get.pepit("MINSCORE")) {
+          if(scores$alen[i] >= get.pepit("MINSCORE")) {
+    #      if(scores$score[i] >= get.pepit("MINSCORE")) {
           I = (clusters[[i]]-1)%%N+1 # target indices
           J = (clusters[[i]]-1)%/%N+1# bs indices
- 	  count = count + 1
+ 	        count = count + 1
           # patch 
           bs.data$insert[is.na(bs.data$insert)]=""
           target.data$insert[is.na(target.data$insert)]=""
@@ -179,7 +167,7 @@ for (bsfile in bslist) {
           ins = target.data$insert[I]
           ins[is.na(ins)] = ""
           chain = target.data$chain[I]
-          bsres = paste(resno, ins, chain, sep="")
+          bsres = paste(resno, ":",ins,":", chain, sep="") # to be tested
           o = order(bsres)
           bsres = bsres[o]
           resno = resno[o]
@@ -221,7 +209,8 @@ if (nrow(D) == 0) {
   q()
 }
 
-if (0) { # p_value needs a larger number of scores of negative bs 
+
+if (get.pepit("PVALUE")) { # p_value needs a larger number of scores of negative bs 
   value = D$alen/D$precision
   o = order(value, decreasing=TRUE)
   value = value[o]

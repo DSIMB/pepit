@@ -22,13 +22,7 @@ BSBANK=args[2]
  
 library(pepit)
 
-#
-# user defined parameters
-#
-set.pepit("PROTEIN", TRUE)
-set.pepit("CONTACT", 6.0)
-set.pepit("ADD", "calpha")
-set.pepit("HSECUTOFF", 13)
+read.config("pepit.cfg")
 
 D=read.table(infile, header=TRUE)
 

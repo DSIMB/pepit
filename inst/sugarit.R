@@ -13,23 +13,7 @@
 library(pepit)
 library(bio3d)
 
-#
-# user defined parameters
-#
-set.pepit("RESIDUES","")
-set.pepit("PRECISION", 1)
-set.pepit("ADD","calpha")
-set.pepit("MINCLIQUE",6)
-set.pepit("MINSCORE", 0) # tous les scores
-set.pepit("MAXCLASHES", 10) # clashes allowed
-set.pepit("NBCLIQUES", 1)
-set.pepit("NBHITS", 100)
-set.pepit("POSE", TRUE)
-set.pepit("TYPES", c("A","C","O","N","c","o","b","n","a")) # all atoms
-#set.pepit("TYPES", c("A","C","O","N")) # backbone atoms
-set.pepit("PVALUE", TRUE)
-set.pepit("MODE",1)
-set.pepit("HSE", 100)
+read.config("pepit.cfg")
 #
 criteria = "score"
 #
