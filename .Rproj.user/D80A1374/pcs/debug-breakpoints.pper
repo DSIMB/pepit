@@ -2,21 +2,6 @@
     "debugBreakpointsState": {
         "breakpoints": [
             {
-                "id": 0,
-                "path": "~/pepit/inst/pepit.R",
-                "line_number": 34,
-                "function_steps": "",
-                "function_name": "toplevel",
-                "state": 1,
-                "editor_state": 1,
-                "editor_line_number": 34,
-                "is_pending_debug_completion": false,
-                "needs_updated_steps": false,
-                "type": 1,
-                "is_package_breakpoint": false,
-                "package_name": ""
-            },
-            {
                 "id": 1,
                 "path": "~/pepit/inst/BuiltBSBank.R",
                 "line_number": 14,
