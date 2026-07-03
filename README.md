@@ -76,18 +76,16 @@ use the script `pepit.R`
 Rscript ./pepit.R target target_chain BSBank prefix
 ```
 
-- target is a pdb file or a pdb id. In this case, `pepit.R` download the pdb file from the Protein Data Bank RCSB PDB.
+- target is a pdb file or a pdb id. In this case, `pepit.R` download the pdb file from the Protein Data Bank RCSB PDB. It accepts .pdb and .cif format.
 - target_chain gives the receptor chain of the pdb target file. It can be a single character or a list of chains as H,L or A,B,C or "*" meaning all the protein chains (the double quote are mandatory)
-- BSBank is binding site bank created by `BuiltBSBank.R`
-- prefix is a string used as a prefix for the names of all the output files.
+- BSBank is binding site bank created by `BuiltBSBank.R`. BSBank is directory name and this directory contains .dat file representing targets and .pdb containing peptides associated with the targets.
+- prefix is a string used as a prefix for the names of all the output files. Retrieved peptides 
+are named <prefix>_peptide-<k>.pdb. Therefore prefix can be a directory name followed by "/".
 
 By default, `pepit.R` produces 1 output file : <prefix>.score
 
-It is possible to change the default values of the program parameters at the beginning of the script file.
-
-All the parameter default values are indicated in `pepit/inst/default_parameters.R`. This R file cannot be used to change the values
-
-of the parameters, it is just here for information. The parameters must be changed in the R scripts `pepit.R
+It is possible to change the default values of the program parameters in the config file `pepit.cfg`.
+This config file must be in the current directory. Otherwise defaults values are used.
 
 For example, if the parameter POSE is set to TRUE, an alignment file that gives the mapping between the protein target and the selected binding sites is output.
 
@@ -126,7 +124,7 @@ Rscript path_to_pepit/inst/BuiltBSBank.R nanobank.dat NanoBank
 BS files are row-column file (data frames) containing information on  atoms of the receptor close to its peptide.
 The bank contains also associated peptide pdb files interacting with the binding sites.
 
-Parameters can be changed in the script `BuiltBSBank.R` as followed
+Parameters can be changed in the script `BuiltBSBank.R` as followed or in `pepit.cfg` file.
 
 ```bash
 set.pepit("CONTACT", 8.0)
