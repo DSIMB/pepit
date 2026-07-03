@@ -5,7 +5,6 @@ extract_cliques<-function(gp, minsize=get.pepit("MINCLIQUE")) {
   cat("clique maximum size", size,"\n")
   size=max(size-1, minsize)
   Cl=igraph::maximal.cliques(gp,min=size)
-  #Cl=cliques(gp, min=6,max=6)
   cat("nb. of cliques=", length(Cl),"\n")
   if (length(Cl)==0) return(list(clique=NULL,size=0))
   ##
@@ -25,15 +24,15 @@ union_clique <- function(C1,C2,N) {
 #
 # sans BC
 #
-merge_cliques<-function(clusters,N,common=get.pepit("MERGECLIQUE")) {
+merge_cliques<-function(clusters,N,common=get.pepit("INTERCLIQUE")) {
   stop=FALSE
   while (!stop) {
     stop=TRUE
     n=length(clusters)
     i=1
-    while (i<= n-1) {
+    while (i <= n-1) {
       j=i+1
-      while (j<= n) {
+      while (j <= n) {
         if (length(base::intersect(clusters[[i]],clusters[[j]]))>=common) {
           #clusters[[i]]=union(clusters[[i]],clusters[[j]]) # may create forks
           C=union_clique(clusters[[i]],clusters[[j]],N)
@@ -58,6 +57,7 @@ pepit_cliques=function(g, X, Y, minclique=get.pepit("MINCLIQUE"), bcmin=get.pepi
     return(NULL)
   }
   nbclique=length(cl$clique)
+  cat("+ nbcliques=", nbclique,"\n")
   size=bc=double(nbclique)
   for (i in 1:nbclique) {
     C=cl$clique[[i]]
@@ -77,6 +77,7 @@ pepit_cliques=function(g, X, Y, minclique=get.pepit("MINCLIQUE"), bcmin=get.pepi
   cl$bc=bc[o]
   cl$clique=cl$clique[o]
   cl$size=size[o]
+  cat("+ nbcliques=", length(o),"\n")
   return(cl)
 }
 
@@ -118,8 +119,8 @@ build_graph = function(types, X, XProp, Y, YProp, mindist, maxdist, deltadist, v
     J=which(YProp$elety %in% types)
     I=which(XProp$elety %in% types)
   }
-  V=vertex(XProp[I,,drop=FALSE], YProp[J,,drop=FALSE], length(I)*length(J), mode=get.pepit("MODE"), hse=get.pepit("HSE"))
-  if (verbose) cat("vertices:",length(I), length(J),length(V)/2,"\n")
+  V=vertex(XProp[I,,drop=FALSE], YProp[J,,drop=FALSE], length(I)*length(J), mode=get.pepit("MODE"), hse=get.pepit("HSECUTOFF"))
+  if (1) cat("vertices:",length(I), length(J), length(V)/2,"\n")
   if (all(V==0) | length(V)<=1)  {
     return(igraph::make_empty_graph())
   }
@@ -138,7 +139,7 @@ build_graph = function(types, X, XProp, Y, YProp, mindist, maxdist, deltadist, v
   P=cbind((E[,3]-1)*N+E[,1],(E[,4]-1)*N+E[,2])
   mode(P)="character" #vertex label and not id to avoid huge graphs with non connected nodes
   gp=igraph::graph.edgelist(P, directed=FALSE)
-  if (verbose) cat("graph:vertices:",igraph::vcount(gp), "graph.edges:", igraph::ecount(gp),"\n")
+  if (1) cat("graph:vertices:",igraph::vcount(gp), "graph.edges:", igraph::ecount(gp),"\n")
   return(gp)
 }
 
@@ -240,6 +241,7 @@ cliques=function(X, XProp, Y, YProp, deltadist, mindist, maxdist, types, verbose
   cat("nb. of merged cliques = ", nbclique, "\n")
   clusters=sort_clusters(clusters, N, X, Y, get.pepit("SCORE"), thresh=deltadist)
   nbclique=length(clusters)
+  cat("++ nbcliques=", nbclique,"\n")
   if (nbclique==0) {
     message("no valid clique after merging")
     #clusters[[1]]=-3

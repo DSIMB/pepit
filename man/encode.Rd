@@ -4,7 +4,12 @@
 \alias{encode}
 \title{Atom typing}
 \usage{
-encode(pdb, cutoff = get.pepit("HSECUTOFF"), pc.code = get.pepit("PCCODE"))
+encode(
+  pdb,
+  cutoff = get.pepit("HSECUTOFF"),
+  pc.code = get.pepit("PCCODE"),
+  chain = NULL
+)
 }
 \arguments{
 \item{pdb}{a pdb structure returned by bio3d::read.pdb}

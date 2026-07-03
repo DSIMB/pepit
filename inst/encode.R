@@ -22,8 +22,6 @@ tchain = args[2] # a chain or a chain list A,B,C or * for all chains
 #
 library(pepit)
 
-set.pepit("HSECUTOFF", 13)
-
 pdb = bio3d::read.pdb(pdbfile)
 
 chainlist = unique(pdb$atom$chain)
@@ -36,5 +34,5 @@ pdb = bio3d::trim.pdb(pdb, chain=tchain)
 
 D = encode(pdb)
 
-outfile = paste(substring(pdbfile,1,4),tchain,".dat",sep="")
+outfile = paste(tools::file_path_sans_ext(pdbfile),tchain,".dat",sep="")
 write.table(D, quote=FALSE, row.name=FALSE, file=outfile)

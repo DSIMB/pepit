@@ -32,7 +32,9 @@ get.pepit <- function(tag) {
 #'
 #' @examples
 read.config <- function(f="pepit_cfg.R") {
+  cat("load config\n")
   if (file.exists(f)) {
+      cat("load config:",f,"\n")
       source(f, local=pkg.pepit)
   }
 }

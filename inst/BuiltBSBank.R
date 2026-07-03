@@ -24,14 +24,25 @@ library(pepit)
 
 read.config("pepit.cfg")
 
-D=read.table(infile, header=TRUE)
+D = read.table(infile, colClasses="character",header=TRUE)
 
+# resid.mode for bs given by a list of residue numbers (comma separated)
 resid.mode = FALSE
 if (ncol(D) == 4) resid.mode = TRUE
 
 for (i in 1:nrow(D)) {
   id=as.character(D[i,1])
+  pdb=NULL
+  #result = bio3d::get.pdb(id)
+  #if (file.exists(result)) pdb=bio3d::read.pdb(result)
   pdb=bio3d::read.pdb(id)
+  if (is.null(pdb)) pdb=bio3d::read.cif(id)
+  if (is.null(pdb)) {
+    message(paste("target file",id,"not found"))
+    next
+  }
+  #unlink(result)
+  
   tchain=as.character(D[i,2])# a target chain can be a list of chains (e.g. H,L)
   lchain=as.character(D[i,3])
   lchain=substring(lchain,1,1) #only one ligand chain
@@ -40,6 +51,7 @@ for (i in 1:nrow(D)) {
   #pdb=bio3d::trim.pdb(pdb, string="protein")
   pdb=bio3d::trim.pdb(pdb, string="noh")
   chains=unique(pdb$atom$chain)
+  tchain = unlist(strsplit(tchain,split=","))
   tchain=intersect(tchain, chains)
   if (length(tchain)==0) {
     next
@@ -51,14 +63,14 @@ for (i in 1:nrow(D)) {
     res = as.integer(unlist(strsplit(D[i,4], split=",")))
     outfile=paste(BSBANK,"/",id,tchain,":",lchain, res[1],".dat",sep="")
   }
-  if (get.pepit("PROTEIN")) {
+  if (get.pepit("PROTEIN")) { # for peptides (!=sugars)
     ligand.pdb = bio3d::trim.pdb(pdb, chain=lchain, resno=res, string="protein")
   } else {
     ligand.pdb = bio3d::trim.pdb(pdb, chain=lchain, resno=res)
   }
   
   inds = get_binding_sites(target.pdb, ligand.pdb, add=get.pepit("ADD"))
-  
+  unlink(outfile)
   for (ch in tchain) {
     pdb=bio3d::trim.pdb(target.pdb, chain=ch)
     target.data = encode(pdb)

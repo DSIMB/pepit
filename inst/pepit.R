@@ -20,7 +20,6 @@ criteria = "score"
 #
 
 args = commandArgs(trailingOnly=TRUE)
-
 if (length(args)<4) {
   cat("usage: pepit.R target chain bs_bank out_prefix\n")
   q()
@@ -55,7 +54,7 @@ if (ext == "" | ext == "pdb" | ext == "cif") {
   pdb = bio3d::trim.pdb(pdb, string="noh")
 
   chainlist = unique(pdb$atom$chain)
-  tchain = unlist(strsplit(tchain,split=""))
+  tchain = unlist(strsplit(tchain,split=","))
   if (tchain[1]=="*") tchain = chainlist
   tchain = intersect(tchain, chainlist)
 
@@ -67,17 +66,19 @@ if (ext == "" | ext == "pdb" | ext == "cif") {
 
   cat("encode target...\n")
   target.data = encode(pdb)
+  datfile = paste(tools::file_path_sans_ext(tfile),".dat", sep="")
+  write.table(target.data, quote=FALSE, col.names = TRUE, row.names=FALSE, file=datfile, append=TRUE) #
 }
 
 if (ext == "dat") {
   target.data = read.table(tfile, header=TRUE)
   chainlist = unique(target.data$chain)
-  tchain = unlist(strsplit(tchain,split=""))
+  tchain = unlist(strsplit(tchain,split=","))
   if (tchain[1]=="*") tchain = chainlist
   tchain = intersect(tchain, chainlist)
   
   target.data = target.data[target.data$chain %in% tchain,]
-  if(nrow(target.dat)==0) {
+  if(nrow(target.data)==0) {
     message("wrong target chain(s)")
     q()
   }
@@ -117,6 +118,10 @@ count = 0
 for (bsfile in bslist) {
   cat("bsfile =", bsfile,"\n")
   bs.data = read.table(bsfile, header=TRUE)
+  # filter with HSECUTOFF
+  hse = get.pepit("HSECUTOFF")
+  bs.data = bs.data[bs.data$hseu <= hse | bs.data$hsed <= hse,]
+  #
   chains = unique(bs.data$chain)
 
   Y = bs.data[,c("x","y","z")]
@@ -130,8 +135,12 @@ for (bsfile in bslist) {
     #cat(count, bsfile, tfile, deltadist, nrow(Y), 0, 100, 0, maxdist+1, 0, 0, "\n", file=allscorefile, append=TRUE)
     next
   }
-  #clusters = result
-  clusters = extend_cliques(X, XProp, Y, YProp, result, deltadist=get.pepit("PRECISION"))
+
+  cat("extend cliques...", get.pepit("EXTEND"), "\n")
+  clusters = result
+  if (get.pepit("EXTEND")) {
+     clusters = extend_cliques(X, XProp, Y, YProp, result, deltadist=get.pepit("PRECISION"))
+  }
   clusters = remove_redundant_clusters (clusters)
   
   scores = score_clusters(clusters, X, Y, deltadist=deltadist)
@@ -144,7 +153,7 @@ for (bsfile in bslist) {
   o = o[1:nbcliques]
   scores = lapply(scores, "[", o)
   clusters = clusters[o]
-  read.config("pepit.cfg")
+  #read.config("pepit.cfg")
   
   for (i in 1:length(clusters)) {
           if(scores$alen[i] >= get.pepit("MINSCORE")) {
@@ -262,10 +271,11 @@ if (nbhits > 0) {
       cat(command,"\n")
       system(command)
     }
-    unlink(paste(prefix,"-*.pdb"))
+    unlink(paste(prefix,"-*.pdb",sep=""))
   }
 
   D[,1] = 1:nrow(D)
+  D$target = as.character(D$target)
   write.table(D, quote=FALSE, row=FALSE, file=scorefile)
 }
 

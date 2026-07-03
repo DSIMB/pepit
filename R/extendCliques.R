@@ -61,7 +61,7 @@ max_bipartite=function(C, K, X, Y, thresh, verbose=FALSE, score_function=get.pep
   while(!stop & niter<20) {
     result=max_bipartite_score(Cprev, K, X, Y,  gp, score_function, thresh) #f(C1=result$C,C0=Cprev)
     nC=length(result$C)
-    if (result$score<=0) stop=TRUE
+    if (result$score<=0) {stop=TRUE; C=Cprev}
     if(result$score>0) C=filter_greedy(result$C,X,Y,score_function, thresh) # C1bar
     if (verbose) cat("C0=",length(Cprev),"C1=",length(result$C),"C1b=",length(C),"C0.C1=",length(intersect(result$C,Cprev)),"C0.C1b=",length(intersect(C,Cprev)),"f(C1,C0)=",result$score,"\n")
     if (all(Cprev%in%C) & all(C%in%Cprev)) {stop=TRUE}
@@ -79,6 +79,7 @@ max_bipartite=function(C, K, X, Y, thresh, verbose=FALSE, score_function=get.pep
 
 
 max_bipartite_simple_greedy=function(C, K, X, Y, thresh, verbose=FALSE, score_function=get.pepit("SCORE")) {
+  cat("max_bipartite_simple_greedy\n")
   Nref=min(nrow(X), nrow(Y))
   N=nrow(X)
   CI=(C-1)%%N+1 # target indices
@@ -142,7 +143,7 @@ extend_cliques=function(X, XProp, Y, YProp, cliques, deltadist, score_function=g
   nbclique=length(cliques)
   clusters=list()
 
-  V=vertex(XProp, YProp, mode=get.pepit("MODE"), size=0, hse=100) # hse=100 => +buried atoms 
+  V=vertex(XProp, YProp, mode=get.pepit("MODE"), size=0, hse=get.pepit("HSECUTOFF")) # hse=100 => +buried atoms 
   for (ic in 1:nbclique) {
     cat("enlarging clique ", ic, "\n")
     C=cliques[[ic]]
@@ -154,10 +155,11 @@ extend_cliques=function(X, XProp, Y, YProp, cliques, deltadist, score_function=g
     #K=selectLinks(C, V, X, Y, deltadist, get.pepit("NBNEI"))
     #K=union(K,C)
     K=(V[,1]-1)*N+V[,2]
-    result=max_bipartite(C, K, X, Y, thresh=deltadist, verbose, score_function)
-    #result=max_bipartite_simple_greedy(C, K, X, Y, deltadist, verbose=FALSE, score_function)
+    #result=max_bipartite(C, K, X, Y, thresh=deltadist, verbose, score_function)
+    result=max_bipartite_simple_greedy(C, K, X, Y, deltadist, verbose=FALSE, score_function)
     clusters[[ic]]=result$C
     #clen[ic]=length(C)
+    cat("from ", nbefore, "to", length(clusters[[ic]]),"\n")
   }
   return(clusters)
 }

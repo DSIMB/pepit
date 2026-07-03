@@ -25,7 +25,8 @@ radius = 1.4
 PVALUE = FALSE
 AAGAP = 10
 PCCODE = c(A = 1, C = 3, D = 5, E = 5, F = 1, G = 2, H = 6, I = 1, K = 6, L = 1, M = 1, N = 4, P = 1, Q = 4, R = 6, S = 4, T = 4, V = 1, W = 2, X = 0, Y = 4)
-HSECUTOFF = 13
+HSECUTOFF = 10
+HSERADIUS = 13
 PROTEIN = TRUE
 ## utile ?
 EMPTY_GRAPH = -3
