@@ -14,11 +14,11 @@
 #' @export
 #'
 #' @examples
-encode = function(pdb, cutoff=get.pepit("HSERADIUS"),  pc.code=get.pepit("PCCODE") , chain=NULL) {
+encode = function(pdb, radius=get.pepit("HSERADIUS"),  pc.code=get.pepit("PCCODE") , chain=NULL) {
   
     if (!is.null(chain)) pdb = bio3d::trim(pdb, chain=chain)
     # HSE
-    hse = HSEB(pdb, cutoff=cutoff)
+    hse = HSEB(pdb, radius=radius)
 
     # atom type
     pdb = type_atoms(pdb, ligchain=NULL)

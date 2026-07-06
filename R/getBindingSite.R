@@ -1,4 +1,3 @@
-
 #' Annotate surface atoms
 #'
 #' @param pdb a pdb structure returned by bio3d::read.pdb
@@ -26,9 +25,11 @@ get_carbons=function(pdb, inds, add="calpha") {
 }
 
 chain_find_carbons=function(pdb, chain, resno, add) {
+    if (add=="bb") sel=bio3d::atom.select(pdb, string = "backbone", chain=chain, resno=resno)
     if (add=="calpha") sel=bio3d::atom.select(pdb, elety="CA", chain=chain, resno=resno)
     if (add=="cab") sel=bio3d::atom.select(pdb, elety=c("CA","CB"), chain=chain, resno=resno)
     if (add=="cbeta") sel=bio3d::atom.select(pdb, string="cbeta", chain=chain, resno=resno) #!backbone+cbeta
+    if (add=="residue") sel=bio3d::atom.select(pdb, chain=chain[i], resno=resno[i]) #!backbone+cbeta
     sel
 }
 
@@ -47,6 +48,7 @@ chain_find_carbons=function(pdb, chain, resno, add) {
 get_atoms=function(pdb, resno, chain, add="calpha") {
   ind = c()
   for (i in 1:length(resno)) {
+      if (add=="bb") sel=bio3d::atom.select(pdb, string = "backbone", chain=chain[i], resno=resno[i])
       if (add=="calpha") sel=bio3d::atom.select(pdb, elety="CA", chain=chain[i], resno=resno[i])
       if (add=="cab") sel=bio3d::atom.select(pdb, elety=c("CA","CB"), chain=chain[i], resno=resno[i])
       if (add=="cbeta") sel=bio3d::atom.select(pdb, string="cbeta", chain=chain[i], resno=resno[i]) #!backbone+cbeta
@@ -69,7 +71,7 @@ get_atoms=function(pdb, resno, chain, add="calpha") {
 #' @export
 
 get_binding_sites = function(target, ligand, cutoff=get.pepit("CONTACT"), add=get.pepit("ADD")) {
-    add_values=c("", "calpha", "cbeta", "cab")
+    add_values=c("", "calpha", "cbeta", "cab", "bb", "residue")
     add=intersect(add, add_values)
     if (length(add)==0) {
       message("add what?")

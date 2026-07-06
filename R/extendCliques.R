@@ -145,7 +145,7 @@ extend_cliques=function(X, XProp, Y, YProp, cliques, deltadist, score_function=g
 
   V=vertex(XProp, YProp, mode=get.pepit("MODE"), size=0, hse=get.pepit("HSECUTOFF")) # hse=100 => +buried atoms 
   for (ic in 1:nbclique) {
-    cat("enlarging clique ", ic, "\n")
+    cat("enlarging clique ", ic)
     C=cliques[[ic]]
     nbefore= length(C)
     #
@@ -183,10 +183,11 @@ remove_redundant_clusters = function(clusters, common=get.pepit("INTERCLIQUE")) 
   while (i<= n-1) {
     j=i+1
     while (j<= n) {
-      lmin=min(length(clusters[[i]]),length(clusters[[j]]),common)
+      lmin = min(length(clusters[[i]]),length(clusters[[j]]))
+      #lmin=min(length(clusters[[i]]),length(clusters[[j]]),common)
       #lmin=common
       if (length(base::intersect(clusters[[i]],clusters[[j]]))>=lmin) {
-        clusters[[j]]=c()
+        clusters = clusters[-j]
         n=n-1
         j=j-1
       }

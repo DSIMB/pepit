@@ -25,7 +25,7 @@ type_atoms=function(pdb, ligchains=NULL) {
     aname=tolower(pdb$atom$elesy[indbb$atom])
     pdb$atom$elesy[indbb$atom]=aname
     pdb$atom$elesy[pdb$calpha]="A"
-    pdb$atom$elesy[pdb$atom$elety=="CB"]="B"
+    pdb$atom$elesy[pdb$atom$elety=="CB"]="b"
     insert = pdb$atom$insert #save inserts
     pdb$atom$insert[is.na(pdb$atom$insert)]=""
 

@@ -31,13 +31,13 @@ get.pepit <- function(tag) {
 #' @export
 #'
 #' @examples
-read.config <- function(f="pepit_cfg.R") {
-  cat("load config\n")
+read.config <- function(f) {
   if (file.exists(f)) {
-      cat("load config:",f,"\n")
+      message("load config:",f,"\n")
       source(f, local=pkg.pepit)
+  } else {
+    message("No config file", f, "! default config loaded\n")
   }
 }
 
 pkg.pepit <- new.env()
-read.config("pepit_cfg.R")

@@ -1,4 +1,4 @@
-#' superpose query (binding site) onto the target. 
+#' superpose query (binding site + ligand) onto the target. 
 #' The ligand is kept while the binding site is removed.
 #' 
 #' @param cluster indices of mapping edges
@@ -8,7 +8,9 @@
 #' @return a pdb structure containing the moved ligand 
 #' @export
 #'
-#' @examples              ligand.moved = superpose_sites2(clusters[[i]], bs.data, target.data, peptide)
+#' @examples
+
+# target : eleno, elety, resid, chain, resno, insert, x, y, z, pc, hseu, hsed
 
 superpose_sites = function(cluster, bs, target, peptide) {
   N = nrow(target)
@@ -21,11 +23,19 @@ superpose_sites = function(cluster, bs, target, peptide) {
   mobile.xyz = c(bs.xyz, peptide$xyz)
   moved.xyz = fit.xyz(fixed=target.xyz, mobile=mobile.xyz, fixed.inds=target.ind, mobile.inds=bs.ind, verbose=FALSE)
   
-  hitrmsd=bio3d::rmsd(moved.xyz, b=target.xyz, a.inds=bs.ind, b.inds=target.ind)
-  cat("-----------> bs rmsd=", hitrmsd,"\n")
+  hitrmsd = bio3d::rmsd(moved.xyz, b=target.xyz, a.inds=bs.ind, b.inds=target.ind)
+  #cat("-----------> bs rmsd=", hitrmsd,"\n")
+
+  pep.ind = (length(bs.xyz)+1):(length(mobile.xyz))
+  peprmsd=bio3d::rmsd(peptide$xyz, b=moved.xyz, b.inds=pep.ind)
+  #cat("-----------> pep rmsd=", peprmsd,"\n")
   
   peptide$xyz = moved.xyz[(length(bs.xyz)+1):(length(mobile.xyz))]
   peptide
+}
+
+#' adjust peptide to aligned binding site
+trim_peptide = function(cluster, bs, peptide) {
 }
 
 #'compute the number of ligand atoms too close to the target atoms
@@ -37,9 +47,7 @@ superpose_sites = function(cluster, bs, target, peptide) {
 #'
 #' @examples
 clashes = function(ligand, target, cutoff=1.4) {
-  result=bio3d::binding.site(target, ligand, cutoff=1.4, byres=FALSE)
-  nclash=length(result$inds$atom)
-  cat("nclash=", nclash, "nligand=", nrow(ligand.moved$atom), "\n")
-  
+  result = bio3d::binding.site(ligand, target, cutoff=cutoff, byres=FALSE)
+  nclash = length(result$inds$atom)  
   nclash
 }

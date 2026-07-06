@@ -22,18 +22,6 @@ vertex <- function(XProp, YProp, mode, size, hse) {
     .Call('_pepit_vertex', PACKAGE = 'pepit', XProp, YProp, mode, size, hse)
 }
 
-#' Constructs vertices of correspondence graph
-#'
-#' @param XProp size N vector of atom types 
-#' @param XResname size N vector of residue names 
-#' @param YProp size M vector of atom types 
-#' @param YResname size M vector of residue names 
-#' @param V output, matrix Nvx2 of vertices
-#' @export
-vertex_ho <- function(XProp, XResname, YProp, YResname) {
-    .Call('_pepit_vertex_ho', PACKAGE = 'pepit', XProp, XResname, YProp, YResname)
-}
-
 #' Constructs correspondence graph
 #'
 #' @param X matrix Nx3
@@ -47,17 +35,9 @@ buildGraph <- function(X, Y, V, deltadist, mindist, maxdist) {
     .Call('_pepit_buildGraph', PACKAGE = 'pepit', X, Y, V, deltadist, mindist, maxdist)
 }
 
-#' Constructs correspondence graph
-#'
-#' @param X matrix Nx3
-#' @param Y matrix Nx3
-#' @param V matrix Nvx2
-#' @param deltadist double
-#' @param mindist double
-#' @param maxdist double
 #' @export
-buildGraph_ho <- function(X, XResno, Y, YResno, V, deltadist, mindist, maxdist, maxgap) {
-    .Call('_pepit_buildGraph_ho', PACKAGE = 'pepit', X, XResno, Y, YResno, V, deltadist, mindist, maxdist, maxgap)
+lDDT <- function(X, I, Y, J) {
+    .Call('_pepit_lDDT', PACKAGE = 'pepit', X, I, Y, J)
 }
 
 #' @export

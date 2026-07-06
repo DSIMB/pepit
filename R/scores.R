@@ -32,29 +32,36 @@ rmsd<-function(X,Y) {
 #' @export
 #'
 #' @examples
-score_clusters = function(clusters, X, Y, score_function=get.pepit("SCORE"), deltadist=1.0) {
+score_clusters = function(clusters, X, XProp, Y, YProp, score_function=get.pepit("SCORE"), deltadist=1.0, bsfile) {
     N = nrow(X)
     M = nrow(Y)
-    results = list()
+    results = data.frame()
     for (i in 1:length(clusters)) {
         C = clusters[[i]]
-        nC = length(C)
+	nC = length(C)
         score = matching_score(C, X, Y, score_function, deltadist)
         dist = deltadist*(1-1/nC**2*score)
         #score = sqrt(score)
         coverage = nC/M
+	lddt = lddt_score(C, X, Y)
         I = (clusters[[i]]-1)%%N+1 # target indices
         J = (clusters[[i]]-1)%/%N+1# query indices
         rms = rmsd(X[I,],Y[J,])
-        results$len = append(results$len,M)
-        results$alen = append(results$alen,nC)
-        results$coverage = append(results$coverage, coverage)
-        results$rmsd = append(results$rmsd, rms)
-        results$distorsion = append(results$distorsion, dist)
-        results$score = append(results$score, score)
+	nres = max(length(unique(XProp$resno[I])), length(unique(YProp$resno[J])))
+	# test score = # of similar residues
+        # results$len = append(results$len,M)
+        # results$alen = append(results$alen,nC)
+        # results$coverage = append(results$coverage, coverage)
+        # results$rmsd = append(results$rmsd, rms)
+        # results$distorsion = append(results$distorsion, dist)
+        # results$score = append(results$score, score)
+	# results$lddt = append(results$lddt, lddt)
+	# results$bsfile = append(results$bsfile, bsfile)
+        results = rbind(results, data.frame(len=M, alen=nC, coverage=coverage, rmsd=rms, distorsion=dist, score=score, lddt=lddt, nres = nres, bsfile=bsfile))
     }
     results
 }
+
 
 #' evaluate pvalues from all scores
 #'
