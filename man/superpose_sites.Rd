@@ -23,6 +23,3 @@ a pdb structure containing the moved ligand
 superpose query (binding site) onto the target. 
 The ligand is kept while the binding site is removed.
 }
-\examples{
-             ligand.moved = superpose_sites2(clusters[[i]], bs.data, target.data, peptide)
-}

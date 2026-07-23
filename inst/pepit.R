@@ -1,5 +1,4 @@
-# 
-# search against binding site bank
+# search against a binding site bank
 #
 # inputs:
 # target pdb file
@@ -15,14 +14,13 @@ library(bio3d)
 
 
 #
-criteria = "score"
+criteria = "alen"
 #
 #
 
 args = commandArgs(trailingOnly=TRUE)
 if (length(args)<4) {
-  cat("usage: pepit.R target chain bs_bank out_prefix\n")
-  q()
+  stop("usage: pepit.R target chain bs_bank out_prefix [resid_file]\n")
 }
 
 tfile = args[1] # a pdb id or a pdb file (can be a .gz file)
@@ -30,22 +28,46 @@ tchain = args[2] # a chain or a chain list A,B,C or * for all chains
 bank = args[3] # a directory with binding sites or a pdb file
 prefix = args[4] # a prefix for generating  output files
 
+#
 read.config("pepit.cfg")
+#
 
-cat("MINSCORE=", get.pepit("MINSCORE"),"\n")
+resi=c()
+if (length(args)>4) {
+   residfile = args[5]
+   if (file.exists(residfile)) {
+      resi = scan(residfile, what="", comment=">")
+   } else {
+      stop("no resid file\n")
+   }
+# decode resi=[chain][resno][insert]->chi,resnoi,insi (i meaning input)
+  resi = unlist(strsplit(resi,split=","))
+  nc = nchar(resi)
+  chi = substring(resi, 1, 1)
+  resnoi =  as.integer(substring(resi, 2, nc))
+  insi = rep(NA,length(resi))
+  insi[is.na(resnoi)] = substring(resi, nc, nc)[is.na(resnoi)]
+  resnoi[is.na(resnoi)] =  as.integer(substring(resi, 2, nc))[is.na(resnoi)]
+}
+#
 deltadist = get.pepit("PRECISION")
 maxdist = get.pepit("MAXDELTADIST")
-allscorefile = paste(prefix, "all.score", sep="")
-scorefile = paste(prefix, ".score", sep="")
-alignfile = paste(prefix, ".al", sep="")
-residfile = paste(prefix, ".resi", sep="")
-allresidfile = paste(prefix, "all.resi", sep="")
+scorefile = paste(prefix, "scores.dat", sep="")
+alignfile = paste(prefix, "alignments.dat", sep="")
 
 ext = tools::file_ext(tfile)
+id = tools::file_path_sans_ext(tfile)
 if (ext == "" | ext == "pdb" | ext == "cif") {
   pdb = NULL
-  if (ext == "" | ext == "pdb") pdb = read.pdb(tfile)
-  if (ext == "cif") pdb = read.cif(tfile)
+  #if (ext == "" | ext == "pdb") pdb = read.pdb(tfile)
+  if (ext == "pdb") pdb = read.pdb(tfile)
+  if (ext == "") {
+     tfile = get.pdb(tfile, format="cif")
+     ext = "cif" # patch for error of bio3d
+  }
+  if(ext == "" | ext == "cif") {
+     pdb = read.cif(tfile)
+  }
   if (is.null(pdb)) {
     message("target file not found")
     q()
@@ -57,21 +79,21 @@ if (ext == "" | ext == "pdb" | ext == "cif") {
   tchain = unlist(strsplit(tchain,split=","))
   if (tchain[1]=="*") tchain = chainlist
   tchain = intersect(tchain, chainlist)
-
+  
   pdb = bio3d::trim.pdb(pdb,chain=tchain)
   if(nrow(pdb$atom)==0) {
     message("wrong target chain(s)")
     q()
   }
 
-  cat("encode target...\n")
+  message("encode target...")
   target.data = encode(pdb)
   datfile = paste(tools::file_path_sans_ext(tfile),".dat", sep="")
-  write.table(target.data, quote=FALSE, col.names = TRUE, row.names=FALSE, file=datfile, append=TRUE) #
+  write.table(target.data, quote=FALSE, col.names = TRUE, row.names=FALSE, file=datfile, append=FALSE) # append ?
 }
 
 if (ext == "dat") {
-  target.data = read.table(tfile, header=TRUE)
+  target.data = read.table(tfile, header=TRUE, tryLogical=FALSE)
   chainlist = unique(target.data$chain)
   tchain = unlist(strsplit(tchain,split=","))
   if (tchain[1]=="*") tchain = chainlist
@@ -87,15 +109,10 @@ if (ext == "dat") {
 ###
 unlink(scorefile)
 unlink(alignfile)
-unlink(residfile)
 ###
-resi=get.pepit("RESIDUES")
-resi=unlist(strsplit(resi,split=","))
-resi=as.integer(resi)
 ###
-
 if (file.exists(bank) & dir.exists(bank)) { # if bank is directory of bs files
-  bslist = dir(bank, pattern=".dat")
+  bslist = dir(bank, pattern="\\.dat")
   bslist = paste(bank,"/",bslist,sep="")
 } else if (file.exists(bank)) { # if bank is a bs file
   bslist = bank
@@ -103,179 +120,162 @@ if (file.exists(bank) & dir.exists(bank)) { # if bank is directory of bs files
   message("unknown bank")
   q()
 }
-
-
-if (length(resi)>0) target.data = target.data[target.data$resid%in%resi,]
-
+# filter with HSE = select Solvent Exposed atoms
+hse = get.pepit("HSECUTOFF")
+target.data = target.data[target.data$hseu<= hse | target.data$hsed <= hse,]
+#
 X = target.data[,c("x","y","z")]
 X = as.matrix(X)
-XProp = target.data
 N = nrow(X)
+XProp = target.data
 
-cat("index bs target precision bslen alen rmsd coverage meandist score clashes\n", file=allscorefile)
-cat("index bs residue chain score\n", file=allresidfile)
-count = 0
+Xbs = X
+XbsProp = XProp
+Nbs = N
+
+if (length(resi)>0) {
+   Ibs = c()
+   for (k in 1:length(resi)) {
+      Ibs = c(Ibs, which(target.data$resno%in%resnoi[k] & target.data$chain%in%chi[k] & target.data$insert%in%insi[k]))
+   }
+   Xbs = target.data[Ibs ,c("x","y","z")]
+   XbsProp = target.data[Ibs,]
+   Xbs = as.matrix(Xbs)
+   Nbs = nrow(Xbs)
+}
+target.data$insert[is.na(target.data$insert)]=""
+#
+#
+#
+minalen = get.pepit("MINALEN")
+nbhits = get.pepit("NBHITS")
+
+allclusters = list()
+allscores = data.frame()
+
 for (bsfile in bslist) {
-  cat("bsfile =", bsfile,"\n")
-  bs.data = read.table(bsfile, header=TRUE)
-  # filter with HSECUTOFF
-  hse = get.pepit("HSECUTOFF")
+  message("bsfile =", bsfile)
+  bs.data = read.table(bsfile, header=TRUE, tryLogical=FALSE)
+  # filter with HSE
   bs.data = bs.data[bs.data$hseu <= hse | bs.data$hsed <= hse,]
-  #
   chains = unique(bs.data$chain)
-
+  bs.data$insert[is.na(bs.data$insert)]=""
   Y = bs.data[,c("x","y","z")]
   Y = as.matrix(Y)
   YProp = bs.data
   
-  result = cliques(X, XProp, Y, YProp, deltadist=1.0, mindist=0.0, maxdist=get.pepit("MAXDELTADIST"), types=get.pepit("TYPES"))
-  if (length(result)==0) {
-    cat("no clique\n")
-    #count = count+1
-    #cat(count, bsfile, tfile, deltadist, nrow(Y), 0, 100, 0, maxdist+1, 0, 0, "\n", file=allscorefile, append=TRUE)
+  clusters = cliques(Xbs, XbsProp, Y, YProp, deltadist=1.0, mindist=0.0, maxdist=get.pepit("MAXDELTADIST"), types=get.pepit("TYPES"))
+  if (length(clusters)==0) {
+    message("no matches")
     next
   }
-
-  cat("extend cliques...", get.pepit("EXTEND"), "\n")
-  clusters = result
-  if (get.pepit("EXTEND")) {
-     clusters = extend_cliques(X, XProp, Y, YProp, result, deltadist=get.pepit("PRECISION"))
-  }
-  clusters = remove_redundant_clusters (clusters)
-  
-  scores = score_clusters(clusters, X, Y, deltadist=deltadist)
-  # test
-  # scores$score = sqrt(pmax(0,scores$score))
-  # scores$score = scores$score/scores$len
-  # fin test
-  o = order(scores[[criteria]], decreasing=TRUE)
   nbcliques = min(length(clusters), get.pepit("NBCLIQUES"))
-  o = o[1:nbcliques]
-  scores = lapply(scores, "[", o)
-  clusters = clusters[o]
-  #read.config("pepit.cfg")
-  
-  for (i in 1:length(clusters)) {
-          if(scores$alen[i] >= get.pepit("MINSCORE")) {
-    #      if(scores$score[i] >= get.pepit("MINSCORE")) {
-          I = (clusters[[i]]-1)%%N+1 # target indices
-          J = (clusters[[i]]-1)%/%N+1# bs indices
- 	        count = count + 1
-          # patch 
-          bs.data$insert[is.na(bs.data$insert)]=""
-          target.data$insert[is.na(target.data$insert)]=""
-          # fin patch 
-          # output matching (= non seq. alignment) in .al file
-          bs_res = paste(bs.data$resno[J],":",bs.data$insert[J],":",bs.data$elety[J],":",bs.data$chain[J], sep="")
-          target_res = paste(target.data$resno[I],":",target.data$insert[I],":",target.data$elety[I],":",target.data$chain[I], sep="")
-          cat(">",count, bsfile, tfile, deltadist, scores$len[i], scores$alen[i], scores$rmsd[i], scores$coverage[i], scores$distorsion[i], scores$score[i], scores$pval[i],"\n", file=alignfile, append=TRUE)
-          cat(bs_res, "\n", file=alignfile, append=TRUE)
-          cat(target_res, "\n", file=alignfile, append=TRUE)
-          # output of BS residues
-          resno = target.data$resno[I]
-          ins = target.data$insert[I]
-          ins[is.na(ins)] = ""
-          chain = target.data$chain[I]
-          bsres = paste(resno, ":",ins,":", chain, sep="") # to be tested
-          o = order(bsres)
-          bsres = bsres[o]
-          resno = resno[o]
-          chain = chain[o]
-          keep = !duplicated(bsres)
-          nb = as.integer(table(bsres))
-          res.data = data.frame(index=count, bs = bsfile, res = bsres[keep], chain = chain[keep], score = nb)
-          write.table(res.data, quote=FALSE, row=FALSE, col = FALSE, file=allresidfile, append=TRUE)
-          nbclashes = NA
-          if (get.pepit("POSE")) {
-             pos = min(gregexpr(":", bsfile)[[1]])
-             pepchain = substring(bsfile, pos+1, pos+1)
-             #bsid = substring(basename(bsfile),1,4)
-             bsid = tools::file_path_sans_ext(bsfile)
-             pepfile = paste(bsid, ".pdb", sep="")
-             cat("pepfile=", pepfile, "\n")
-             if (file.exists(pepfile)) {
-                peptide = bio3d::read.pdb(pepfile)
-             # output binding site posed on target in a .pdb file 
-                ligand.moved = superpose_sites(clusters[[i]], bs.data, target.data, peptide)
-                nbclashes = clashes(ligand.moved, pdb)
-                cat("nbclashes=", nbclashes,"\n")
-                if (nbclashes <= get.pepit("MAXCLASHES")) {
-              	  pepfile = paste(prefix, "-", count, ".pdb",sep="")
-              	  write.pdb(pdb=ligand.moved, file = pepfile)
-                }
-             }
-          }
-          cat(count, bsfile, tfile, deltadist, scores$len[i], scores$alen[i], scores$rmsd[i], scores$coverage[i], scores$distorsion[i], scores$score[i], nbclashes, "\n", file=allscorefile, append=TRUE)
-      }
+  clusters = clusters[1:nbcliques] # clusters are sorted by the function cliques()
+                    
+  # renumbering of links in clusters to consider all target residues
+  if (length(resi)>0) {
+     for (k in 1:length(clusters)) {
+     	 I = (clusters[[k]]-1)%%Nbs + 1
+	 J = (clusters[[k]]-1)%/%Nbs + 1
+	 I = Ibs[I]
+ 	 clusters[[k]] = (J-1)*N + I
+     }
   }
-}
-#
-# sort results for best scores and or p-value (scores here)
-#
-D = read.table(allscorefile, header=TRUE)
-if (nrow(D) == 0) {
-  message("no hit found")
-  q()
-}
-
-
-if (get.pepit("PVALUE")) { # p_value needs a larger number of scores of negative bs 
-  value = D$alen/D$precision
-  o = order(value, decreasing=TRUE)
-  value = value[o]
-  ind = which(!duplicated(D$bs[o]))
-  value = value[ind]
-  pval = evd(value)
-  D$pval = p_values(D$alen/D$precision, pval$loc, pval$scale)
-}
-#
-# sorts output of pose files
-#
-if (get.pepit("POSE")) {
-  noclash = D$clashes<=get.pepit("MAXCLASHES")
-  D = D[noclash,]
-}
-#
-o = order(D$alen, decreasing=TRUE)#
-#
-D = D[o, ]
-nbhits = min(get.pepit("NBHITS"), nrow(D))
-if (nbhits > 0) {
-  D = D[1:nbhits,]
-  Dresid = read.table(allresidfile, header=TRUE)
-
-  ind = which(Dresid$index %in% D$index)
-  Dresid = Dresid[ind,]
-  
-  index = Dresid$index
-  for (k in 1:nrow(D)) {
-    ind = which(index == D$index[k])
-    Dresid$index[ind] = k
+  #
+  if (get.pepit("EXTEND")) {
+     message("extend cliques...", get.pepit("EXTEND"), length(clusters), "clusters\n", append=TRUE)
+     clusters = extend_cliques(X, XProp, Y, YProp, clusters, deltadist=get.pepit("PRECISION"))
   }
-  write.table(Dresid, quote=FALSE, row=FALSE, file=residfile)
-  
-  Lalign = readLines(alignfile)
-  unlink(alignfile)
-  for (k in 1:nbhits) {
-    i = D$index[k]-1
-    cat(">", k,  as.character(D[k,-1]), "\n", file=alignfile, append=TRUE)
-    cat(Lalign[(3*i+2):(3*i+3)], sep="\n", file=alignfile, append=TRUE)
-  }
-  
-  if (get.pepit("POSE")) {
-    for (k in 1:nbhits) {
-      pepfile = paste(prefix, "-", D[k,"index"], ".pdb", sep="")
-      if (!file.exists(pepfile)) next
-      newfile = paste(prefix, "_peptide","-", k, ".pdb", sep="")
-      command = paste("mv ", pepfile, " ", newfile, sep="")
-      cat(command,"\n")
-      system(command)
+  #clusters = remove_redundant_clusters (clusters)
+
+  bsid = tools::file_path_sans_ext(bsfile)
+  pepfile = paste(bsid, ".pdb", sep="")
+  peptide = bio3d::read.pdb(pepfile)
+  keep = select_clusters(clusters, target.data, bs.data, pdb, peptide, minalen)
+  if (length(keep) > 0) {
+      clusters = clusters[keep]
+      allclusters = c(allclusters, clusters)
+      scores = score_clusters(clusters, X, XProp, Y, YProp, deltadist=deltadist, bsfile=bsfile)
+      allscores = rbind( allscores, scores)
+   }
+}
+message("End of computation of all clusters")
+
+if (nrow(allscores) == 0) {
+   stop("no match found")
+}
+#colnames(allscores) = c("len", "alen", "coverage", "rmsd", "distorsion", "score", "lddt", "bsfile")
+
+# sort allclusters; keep first NBHITS and equivalent last items
+  message("Sort all clusters", length(allclusters))
+  nbclusters = min(length(allclusters), get.pepit("NBHITS"))
+  o = order(allscores[[criteria]], decreasing=TRUE)
+  o = o[1:nbclusters]
+  allscores =  allscores[o,]
+  allclusters = allclusters[o]
+
+  seqfile = paste(prefix, "sequences.faa",sep="")
+
+# outputs
+cat("index bs target precision bslen alen rmsd coverage meandist score lddt nres peplen\n", file=scorefile)
+
+  for (i in 1:nrow(allscores)) {
+       bsfile = allscores$bsfile[i]
+
+bs.data = read.table(bsfile, header=TRUE, tryLogical=FALSE)
+       # filter with HSE
+       bs.data = bs.data[bs.data$hseu <= hse | bs.data$hsed <= hse,]
+       chains = unique(bs.data$chain)
+       bs.data$insert[is.na(bs.data$insert)]=""
+       Y = bs.data[,c("x","y","z")]
+       Y = as.matrix(Y)
+       YProp = bs.data
+       bsid = tools::file_path_sans_ext(bsfile)
+       pepfile = paste(bsid, ".pdb", sep="")
+       peptide = bio3d::read.pdb(pepfile)
+       peplen = sum(peptide$calpha)
+
+# output peptide pdbs
+        I = (allclusters[[i]]-1)%%N+1 # target indices
+        J = (allclusters[[i]]-1)%/%N+1# bs indices
+        if (get.pepit("POSE")) {
+            # output binding site posed on target in a .pdb file 
+             ligand.moved = superpose_sites(allclusters[[i]], bs.data, target.data, peptide)
+    	     #pdb1 = bio3d::trim.pdb(peptide, resno=target.data$resno[I], chain=target.data$chain[I], insert=target.data$insert[I])
+   	     targetbs.pdb = bio3d::trim.pdb(pdb, resno=target.data$resno[I], chain=target.data$chain[I], insert=target.data$insert[I])
+	     pepresno = NULL
+	     if (get.pepit("PEPTRIM")) {
+		   message("reducing peptide size")
+		   pepsel = bio3d::binding.site(ligand.moved, targetbs.pdb, cutoff=get.pepit("CONTACT"), byres=TRUE)
+		   if (0) {
+		      peprm = bio3d::binding.site(ligand.moved, pdb, cutoff=1.4, byres=TRUE)
+		      pepsel$resno = setdiff(pepsel$resno, peprm$resno)
+		   }
+		   if (!is.null(pepsel)) {
+		      pepresno = seq(min(pepsel$resno), max(pepsel$resno))
+		      peplen = length(pepresno)
+		      ligand.moved = bio3d::trim.pdb(ligand.moved, resno=pepresno)
+		   }
+	     }
+	     ligand.moved$atom$chain="P" # required for futher analysis (peptide is always chain P)
+             pepfile = paste(prefix, "peptide-", i, ".pdb",sep="")
+             write.pdb(pdb=ligand.moved, file = pepfile)
+ 	     if (get.pepit("PEPSEQ")) {
+	     	seq = paste(aa321(ligand.moved$atom$resid[ligand.moved$calpha]),collapse="")
+		cat(">",i, bsfile, "\n", file=seqfile, append=TRUE)
+		cat(seq,"\n", file=seqfile, append=TRUE)
+	     }
+	}
+# output matching (= non seq. alignment) in .al file
+	if (get.pepit("ALIGNFILE")) {
+             	      bs_res = paste(bs.data$resno[J],":",bs.data$insert[J],":",bs.data$elety[J],":",bs.data$chain[J], sep="")
+             	      target_res = paste(target.data$resno[I],":",target.data$insert[I],":",target.data$elety[I],":",target.data$chain[I], sep="")
+             	      cat(">",i, bsfile, tfile, deltadist, allscores$len[i], allscores$alen[i], allscores$rmsd[i], allscores$coverage[i], allscores$distorsion[i], allscores$score[i], allscores$pval[i],"\n", file=alignfile, append=TRUE)
+             	      cat(bs_res, "\n", file=alignfile, append=TRUE)
+             	      cat(target_res, "\n", file=alignfile, append=TRUE)
+	 }
+	 message("output score file")
+# output score file 
+        cat(i, bsfile, tfile, deltadist, allscores$len[i], allscores$alen[i], allscores$rmsd[i], allscores$coverage[i], allscores$distorsion[i], allscores$score[i], allscores$lddt[i], allscores$nres[i], peplen, "\n", file=scorefile, append=TRUE)
     }
-    unlink(paste(prefix,"-*.pdb",sep=""))
-  }
-
-  D[,1] = 1:nrow(D)
-  D$target = as.character(D$target)
-  write.table(D, quote=FALSE, row=FALSE, file=scorefile)
-}
 

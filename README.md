@@ -16,6 +16,10 @@ A few R scripts are included that make use of the pepit R package.
 No R programming is required.
 
 ## Installation
+The pepit package can be installed from a tar file `pepit.tar.gz`
+```bash
+R CMD INSTALL --preclean --no-multiarch --with-keep.source ~/pepit
+```
 
 The pepit package is installed on github repository https://github.com/DSIMB/pepit.
 
@@ -64,16 +68,19 @@ PDB Receptor.Chain Peptide.Chain
 ```
 
 ```bash
-Rscript ./BuiltBSBank.R nanobank.dat Bank
+Rscript ./BuiltBSBank.R nanobank.dat Bank [resid]
 ```
 
 the script produces 4 pdb files  `148lE:S.pdb`  `1a07A:C.pdb`  `1a07B:D.pdb`  `1a08A:C.pdb`
+
+If the keyword "resid" is added to the command line, a resid file containing
+residue numbers at the binding site is produced.
 
 ### Peptide search
 use the script `pepit.R`
 
 ```bash
-Rscript ./pepit.R target target_chain BSBank prefix
+Rscript ./pepit.R target target_chain BSBank prefix [resid.file]
 ```
 
 - target is a pdb file or a pdb id. In this case, `pepit.R` download the pdb file from the Protein Data Bank RCSB PDB. It accepts .pdb and .cif format.

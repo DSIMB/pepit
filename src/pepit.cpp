@@ -6,6 +6,7 @@ using namespace Rcpp;
 double distloc(NumericMatrix X, int ind1, int ind2) {
   int i;
   double x,y,sum=0;
+  
   for (i=0;i<3;i++) {
     x=X(ind1-1,i);
     y=X(ind2-1,i);
@@ -78,42 +79,9 @@ IntegerMatrix vertex(DataFrame XProp,  DataFrame YProp, int mode, int size, int 
         fprintf(stderr,"no product graph...\n");
         return V(Range(0,0),_);
   }
-  fprintf(stdout, "---> vertices of correspondence graph = mapping edges: %d\n", V.nrow());
   return V(Range(0,v-1),_);
 }
 
-
-
-//' Constructs vertices of correspondence graph
-//'
-//' @param XProp size N vector of atom types 
-//' @param XResname size N vector of residue names 
-//' @param YProp size M vector of atom types 
-//' @param YResname size M vector of residue names 
-//' @param V output, matrix Nvx2 of vertices
-//' @export
-// [[Rcpp::export]]
-IntegerMatrix vertex_ho(StringVector XProp, StringVector XResname, StringVector YProp, StringVector YResname) {
-  int i,ip,v=0;
-  int N=XProp.size();
-  int M=YProp.size();
-  IntegerMatrix V(N*M,2);
-  for(i=0; i<M; i++) {
-    for (ip=0; ip<N; ip++) {
-      if (strcmp(XProp(ip),YProp(i))==0 && strcmp(XResname(ip),YResname(i))==0) {
-        //Rcpp::Rcout << XProp(ip) << "," << YProp(i) << ","<< XRes(ip) << ","<< YRes(i) << "\n";
-        V(v,0)=i+1;
-        V(v,1)=ip+1;
-        v++;
-      }
-    }
-  }
-  if (v<=1) {
-    fprintf(stderr,"no product graph...\n");
-    return V(Range(0,0),_);
-  }
-  return V(Range(0,v-1),_);
-}
 
 
 //' Constructs correspondence graph
@@ -160,55 +128,39 @@ IntegerMatrix buildGraph(NumericMatrix X, NumericMatrix Y, IntegerMatrix V, doub
   return E;
 }
 
-//' Constructs correspondence graph
-//'
-//' @param X matrix Nx3
-//' @param Y matrix Nx3
-//' @param V matrix Nvx2
-//' @param deltadist double
-//' @param mindist double
-//' @param maxdist double
+
 //' @export
 // [[Rcpp::export]]
-IntegerMatrix buildGraph_ho(NumericMatrix X, IntegerVector XResno, NumericMatrix Y, IntegerVector YResno, IntegerMatrix V, double deltadist, double mindist, double maxdist, int maxgap) {
-  int i,j, nv, e=0, gap;
-  double d,d1,d2;
-  std::vector<int> Etmp;
+NumericVector lDDT(NumericMatrix X, IntegerVector I, NumericMatrix Y, IntegerVector J) {
+  double d1, d2, deltadist;
+  int i, j, n, total, count0, count1, count2, count4;
+  NumericVector out(1);
   
-  nv=V.nrow();
-  
-  for(i=0; i<nv-1; i++) {
-    for (j=i+1; j<nv; j++) {
-      //printf("%d %d %d %d\n",V(i,0),V(j,0),V(i,1),V(j,1));
-      d1=distloc(Y,V(i,0),V(j,0)); // dist between atoms i and j in Y
-      d2=distloc(X,V(i,1),V(j,1)); // dist between atoms i and j in X
-      d=fabs(d1-d2);
-      //gap=gaploc(XResno,V(i,1),V(j,1));
-      gap=gaploc(YResno,V(i,0),V(j,0));
-      if (d<=deltadist &&  V(i,0)!=V(j,0) && V(i,1)!=V(j,1) && gap<=maxgap) {
-//     if (d<=deltadist && d1>=mindist && d2>=mindist && d1<=maxdist && d2<=maxdist && gap<=maxgap) {
-        Etmp.push_back(V(i,1));
-        Etmp.push_back(V(j,1));
-        Etmp.push_back(V(i,0));
-        Etmp.push_back(V(j,0));
-        e+=1;
+  n=I.size();
+  NumericVector scores(n);
+  total = 0;
+  count0 = count1 = count2 = count4 = 0;
+  for (i=0; i<I.size();i++) {
+    for (j=0; j<I.size();j++) {
+      d2=distloc(X,I(j),I(i));
+      if (i != j && d2 < 15.0) {
+	total++;
+	d1=distloc(Y,J(j),J(i));
+	deltadist=fabs(d1-d2);
+	if (deltadist < 0.5) count0++;
+	if (deltadist < 1.0) count1++;
+	if (deltadist < 2.0) count2++;
+	if (deltadist < 4) count4++;
       }
     }
   }
-  int n=Etmp.size();
-  IntegerMatrix E(e,4);
-  for (i=0,j=0; i<n-3; i+=4,j++) {
-    E(j,0)=Etmp[i];
-    E(j,1)=Etmp[i+1];
-    E(j,2)=Etmp[i+2];
-    E(j,3)=Etmp[i+3];
-  }
-  Etmp.clear();
-  return E;
+
+  if (total == 0)
+    return 0.;
+
+  out(0) = 0.25 * (double)(count0 + count1 + count2 + count4) / total;
+  return out;
 }
-
-
-
 
 
 //' @export
@@ -217,8 +169,8 @@ NumericVector mapping_dist_sum2(NumericMatrix X, IntegerVector I, IntegerVector 
   double  score, sc, d1, d2, deltadist;
   int i,j,n;
 
+  //printf("X=%ld, Y=%ld, CI=%ld, CJ=%ld\n", X.size(), Y.size(), I.size(), J.size());
   n=I.size();
-  //printf("mapping_dist_sum %d %d\n", I.size(), CI.size());
   if (thresh<=0.) {
     thresh=15.; //patchsearch_NEIDIST
     printf("thresh=%lf\n", thresh);
@@ -227,14 +179,14 @@ NumericVector mapping_dist_sum2(NumericMatrix X, IntegerVector I, IntegerVector 
   for (i=0; i<I.size();i++) {
     score=0.;
     for (j=0; j<CI.size();j++) {
-       if ((CJ(j)==J(i) && CI(j)!=I(i)) || (CI(j)==I(i) && CJ(j)!=J(i))) {
+      if ((CJ(j)==J(i) && CI(j)!=I(i)) || (CI(j)==I(i) && CJ(j)!=J(i))) {
         score=0.;
         break;
       } else {
 	        d1=distloc(Y,CJ(j),J(i));
 	        d2=distloc(X,CI(j),I(i));
 	        deltadist=fabs(d1-d2);
-	        sc=1-deltadist/thresh;
+	        sc=1.0 - deltadist/thresh;
       }
       //if (deltadist>thresh) sc=0.;
       score=score+sc;

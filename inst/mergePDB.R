@@ -18,7 +18,7 @@ if (ext1 == "cif") pdb = suppressWarnings(read.cif(pdbfile1))
 pdb1 = trim.pdb(pdb, chain=chain1)
 pdb1 = bio3d::trim.pdb(pdb1, string="protein")
 pdb1 = bio3d::trim.pdb(pdb1, string="noh") 
-pdb1 = clean.pdb(pdb1, fix.chain = TRUE, fix.aa = TRUE)
+#pdb1 = clean.pdb(pdb1, fix.chain = TRUE, fix.aa = TRUE)
 pdball = pdb1
 
 pdb2 = NULL
@@ -33,7 +33,7 @@ if (length(args) == 4) {
       pdb = bio3d::trim.pdb(pdb, string="noh") 
    }
    pdb2 = trim.pdb(pdb, chain=chain2)
-   clean.pdb(pdb2, fix.chain = TRUE, fix.aa = TRUE)
+   #clean.pdb(pdb2, fix.chain = TRUE, fix.aa = TRUE)
    pdb1$atom$chain = "A"
    pdb2$atom$chain = "P"
    pdball = cat.pdb(pdb1, pdb2, renumber=FALSE, rechain=FALSE)

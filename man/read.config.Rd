@@ -4,7 +4,7 @@
 \alias{read.config}
 \title{read a config file}
 \usage{
-read.config(f = "pepit_cfg.R")
+read.config(f)
 }
 \arguments{
 \item{a}{config R file}

@@ -6,8 +6,8 @@
 # list of chains to be encoded
 # 
 # output:
-# a data file containing a table: pdbid target_chains peptide_chain
-# columns : eleno elety resid chain resno insert x y z hseu hsed
+# a data file containing a table with columns
+# eleno elety resid chain resno insert x y z hseu hsed
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -22,7 +22,7 @@ tchain = args[2] # a chain or a chain list A,B,C or * for all chains
 #
 library(pepit)
 
-pdb = bio3d::read.pdb(pdbfile)
+pdb = bio3d::read.cif(pdbfile)
 
 chainlist = unique(pdb$atom$chain)
 tchain = unlist(strsplit(tchain,split="")) # could be ",", but works fine as is

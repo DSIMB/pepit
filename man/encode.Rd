@@ -6,7 +6,7 @@
 \usage{
 encode(
   pdb,
-  cutoff = get.pepit("HSECUTOFF"),
+  cutoff = get.pepit("HSERADIUS"),
   pc.code = get.pepit("PCCODE"),
   chain = NULL
 )
